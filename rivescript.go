@@ -8,11 +8,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	//_Parser "./parser.go"
 )
 
 // Constants
 const RS_VERSION float64 = 2.0
+
+/******************************************************************************
+ * Constructor and Debug Methods                                              *
+ ******************************************************************************/
 
 type RiveScript struct {
 	// Parameters
@@ -22,18 +27,20 @@ type RiveScript struct {
 	UTF8   bool // Support UTF-8 RiveScript code
 
 	// Internal data structures
-	global   map[string]string      // 'global' variables
-	var_     map[string]string      // 'var' bot variables
-	sub      map[string]string      // 'sub' substitutions
-	person   map[string]string      // 'person' substitutions
-	array    map[string][]string    // 'array'
-	users    map[string][]*UserData // user variables
-	freeze   map[string][]*UserData // frozen user variables
-	includes map[string]string      // included topics
-	inherits map[string]string      // inherited topics
-	objlangs map[string]string      // object macro languages]
-	topics   map[string]*astTopic   // main topic structure
-	thats    map[string]*thatTopic   // %Previous mapper
+	global       map[string]string          // 'global' variables
+	var_         map[string]string          // 'var' bot variables
+	sub          map[string]string          // 'sub' substitutions
+	person       map[string]string          // 'person' substitutions
+	array        map[string][]string        // 'array'
+	users        map[string][]*UserData     // user variables
+	freeze       map[string][]*UserData     // frozen user variables
+	includes     map[string]map[string]bool // included topics
+	inherits     map[string]map[string]bool // inherited topics
+	objlangs     map[string]string          // object macro languages]
+	topics       map[string]*astTopic       // main topic structure
+	thats        map[string]*thatTopic      // %Previous mapper
+	sortedTopics map[string]string          // Sorted topic structure
+	sortedThats  map[string]string          // Sorted %Previous structure
 }
 
 func New() *RiveScript {
@@ -51,9 +58,36 @@ func New() *RiveScript {
 	rs.array = map[string][]string{}
 	//rs.users = map[string]*UserData{}
 	//rs.freeze
+	rs.includes = map[string]map[string]bool{}
+	rs.inherits = map[string]map[string]bool{}
 	rs.topics = map[string]*astTopic{}
 	rs.thats = map[string]*thatTopic{}
+	rs.sortedTopics = map[string]string{}
+	rs.sortedThats = map[string]string{}
 	return rs
+}
+
+func (rs RiveScript) Version() string {
+	// TODO: versioning
+	return "0.0.1"
+}
+
+// say prints a debugging message
+func (rs RiveScript) say(message string, a ...interface{}) {
+	if rs.Debug {
+		fmt.Printf(message+"\n", a...)
+	}
+}
+
+// warn prints a warning message for non-fatal errors
+func (rs RiveScript) warn(message string, a ...interface{}) {
+	fmt.Printf(message+"\n", a...)
+}
+
+// syntax is like warn but takes a filename and line number.
+func (rs RiveScript) warnSyntax(message string, filename string, lineno int, a ...interface{}) {
+	message += fmt.Sprintf(" at %s line %d", filename, lineno)
+	rs.warn(message, a...)
 }
 
 /******************************************************************************
@@ -111,6 +145,17 @@ func (rs RiveScript) LoadDirectory(path string, extensions ...string) {
 }
 
 /*
+Stream loads RiveScript code from a text buffer.
+
+Params:
+- code: Raw source code of a RiveScript document, with line breaks after each line.
+*/
+func (rs RiveScript) Stream(code string) {
+	lines := strings.Split(code, "\n")
+	rs.parse("Stream()", lines)
+}
+
+/*
 parse loads the RiveScript code into the bot's memory.
 */
 func (rs RiveScript) parse(path string, lines []string) {
@@ -155,13 +200,21 @@ func (rs RiveScript) parse(path string, lines []string) {
 	// Consume all the parsed triggers.
 	for topic, data := range ast.topics {
 		// Keep a map of the topics that are included/inherited under this topic.
-		// if val, ok := rs.includes[topic]; !ok {
-		// 	rs.includes[topic] = map[string]bool{}
-		// }
-		// if val, ok := rs.inherits[topic]; !ok {
-		// 	rs.inherits[topic] = map[string]bool{}
-		// }
-		// TODO: merge these in
+		if _, ok := rs.includes[topic]; !ok {
+			rs.includes[topic] = map[string]bool{}
+		}
+		if _, ok := rs.inherits[topic]; !ok {
+			rs.inherits[topic] = map[string]bool{}
+		}
+
+		// Merge in the topic inclusions/inherits.
+		for included, _ := range data.includes {
+			fmt.Printf("%v", included)
+			rs.includes[topic][included] = true
+		}
+		for inherited, _ := range data.inherits {
+			rs.inherits[topic][inherited] = true
+		}
 
 		// Initialize the topic structure.
 		if _, ok := rs.topics[topic]; !ok {
@@ -193,6 +246,31 @@ func (rs RiveScript) parse(path string, lines []string) {
 	}
 }
 
+/*
+SortReplies sorts the reply structures in memory for optimal matching.
+
+After you have finished loading your RiveScript code, call this method to
+populate the various sort buffers. This is absolutely necessary for reply
+matching to work efficiently!
+*/
+func (rs RiveScript) SortReplies() {
+	// (Re)initialize the sort cache.
+	rs.sortedTopics = map[string]string{}
+	rs.sortedThats = map[string]string{}
+	rs.say("Sorting triggers...")
+
+	// Loop through all the topics.
+	for topic, _ := range rs.topics {
+		rs.say("Analyzing topic %s", topic)
+
+		// Collect a list of all the triggers we're going to worry about. If this
+		// topic inherits another topic, we need to recursively add those to the
+		// list as well.
+		_ = rs.getTopicTriggers(topic, rs.topics, nil)
+		_ = rs.getTopicTriggers(topic, nil, rs.thats)
+	}
+}
+
 // DumpTopics is a debug method which dumps the topic structure from the bot's memory.
 func (rs RiveScript) DumpTopics() {
 	for topic, data := range rs.topics {
@@ -213,22 +291,4 @@ func (rs RiveScript) DumpTopics() {
 			}
 		}
 	}
-}
-
-// say prints a debugging message
-func (rs RiveScript) say(message string, a ...interface{}) {
-	if rs.Debug {
-		fmt.Printf(message+"\n", a...)
-	}
-}
-
-// warn prints a warning message for non-fatal errors
-func (rs RiveScript) warn(message string, a ...interface{}) {
-	fmt.Printf(message+"\n", a...)
-}
-
-// syntax is like warn but takes a filename and line number.
-func (rs RiveScript) warnSyntax(message string, filename string, lineno int, a ...interface{}) {
-	message += fmt.Sprintf(" at %s line %d", filename, lineno)
-	rs.warn(message, a...)
 }
