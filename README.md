@@ -14,8 +14,8 @@ Rough estimation of the current progress on RiveScript-Go:
 
 - [x] `LoadFile`, `LoadDirectory` and parsing RiveScript document (AST)
 - [x] Reading parsed data into bot's main memory
-- [ ] `SortReplies()` to sort the data in the bot's memory
-  - [ ] Topic inheritence/includes
+- [x] `SortReplies()` to sort the data in the bot's memory
+  - [x] Topic inheritence/includes
 - [ ] `Reply()` to fetch a reply.
   - [ ] Response tag processing
 - [ ] Make a standalone "shell" program for quickly testing the bot
