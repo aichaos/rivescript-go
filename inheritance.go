@@ -7,11 +7,6 @@ import "fmt"
 These are helper functions to assist with topic inheritance and includes.
 */
 
-type sortedTriggerEntry struct {
-	trigger string
-	pointer *astTrigger
-}
-
 /*
 getTopicTriggers recursively scans topics and collects triggers therein.
 
@@ -125,22 +120,17 @@ func (rs RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopic
 	// Collect the triggers for *this* topic. If this topic inherits any other
 	// topics, it means that this topic's triggers have higher priority than
 	// those in any inherited topics. Enforce this with an {inherits} tag.
-	if _, ok := rs.inherits[topic]; ok {
-		count := 0 // TODO: count this better
-		for i := range rs.inherits[topic] {
-			count += 1
-			_ = i
+	if len(rs.inherits[topic]) > 0 || inherited {
+		for _, trigger := range inThisTopic {
+			rs.say("Prefixing trigger with {inherits=%d} %s", inheritance, trigger.trigger)
+			label := fmt.Sprintf("{inherits=%d}%s", inheritance, trigger.trigger)
+			triggers = append(triggers, sortedTriggerEntry{label, trigger.pointer})
 		}
-		if count > 0 {
-			for _, trigger := range inThisTopic {
-				rs.say("Prefixing trigger with {inherits=%d} %s", inheritance, trigger.trigger)
-				label := fmt.Sprintf("{inherits=%d}%s", inheritance, trigger.trigger)
-				triggers = append(triggers, sortedTriggerEntry{label, trigger.pointer})
-			}
+	} else {
+		for _, trigger := range inThisTopic {
+			triggers = append(triggers, sortedTriggerEntry{trigger.trigger, trigger.pointer})
 		}
 	}
-
-	// fmt.Printf("Result: %v\n", inThisTopic)
 
 	return triggers
 }

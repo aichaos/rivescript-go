@@ -2,8 +2,8 @@ package rivescript
 
 import (
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 func (rs RiveScript) ParseSource(filename string, code []string) *astRoot {
@@ -14,14 +14,14 @@ func (rs RiveScript) ParseSource(filename string, code []string) *astRoot {
 	ast.begin.global["hi"] = "true"
 
 	// Track temporary variables
-	topic := "random"    // Default topic = random
-	lineno := 0          // Line numbers for syntax tracking
-	comment := false     // In a multi-line comment
-	inobj := false       // In an object macro
-	objName := ""        // Name of the object we're in
-	objLang := ""        // The programming language of the object
-	objBuf := []string{} // Source code buffer of the object
-	isThat := ""        // Is a %Previous trigger
+	topic := "random"       // Default topic = random
+	lineno := 0             // Line numbers for syntax tracking
+	comment := false        // In a multi-line comment
+	inobj := false          // In an object macro
+	objName := ""           // Name of the object we're in
+	objLang := ""           // The programming language of the object
+	objBuf := []string{}    // Source code buffer of the object
+	isThat := ""            // Is a %Previous trigger
 	var curTrig *astTrigger // Pointer to the current trigger
 	curTrig = nil
 
@@ -31,9 +31,9 @@ func (rs RiveScript) ParseSource(filename string, code []string) *astRoot {
 	}
 	concatModes := map[string]string{
 		// Supported concat modes
-		"none": "",
+		"none":    "",
 		"newline": "\n",
-		"space": " ",
+		"space":   " ",
 	}
 
 	// Go through the lines of code.

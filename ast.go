@@ -18,17 +18,17 @@ The tree looks like this (in JSON-style syntax):
 */
 
 type astRoot struct {
-	begin astBegin
-	topics map[string]*astTopic
+	begin   astBegin
+	topics  map[string]*astTopic
 	objects []*astObject
 }
 
 type astBegin struct {
 	global map[string]string
-	var_ map[string]string
-	sub map[string]string
+	var_   map[string]string
+	sub    map[string]string
 	person map[string]string
-	array map[string][]string // Map of string (names) to arrays-of-strings
+	array  map[string][]string // Map of string (names) to arrays-of-strings
 }
 
 type astTopic struct {
@@ -38,17 +38,17 @@ type astTopic struct {
 }
 
 type astTrigger struct {
-	trigger string
-	reply []string
+	trigger   string
+	reply     []string
 	condition []string
-	redirect string
-	previous string
+	redirect  string
+	previous  string
 }
 
 type astObject struct {
-	name string
+	name     string
 	language string
-	code []string
+	code     []string
 }
 
 func newAST() *astRoot {

@@ -27,20 +27,19 @@ type RiveScript struct {
 	UTF8   bool // Support UTF-8 RiveScript code
 
 	// Internal data structures
-	global       map[string]string          // 'global' variables
-	var_         map[string]string          // 'var' bot variables
-	sub          map[string]string          // 'sub' substitutions
-	person       map[string]string          // 'person' substitutions
-	array        map[string][]string        // 'array'
-	users        map[string][]*UserData     // user variables
-	freeze       map[string][]*UserData     // frozen user variables
-	includes     map[string]map[string]bool // included topics
-	inherits     map[string]map[string]bool // inherited topics
-	objlangs     map[string]string          // object macro languages]
-	topics       map[string]*astTopic       // main topic structure
-	thats        map[string]*thatTopic      // %Previous mapper
-	sortedTopics map[string]string          // Sorted topic structure
-	sortedThats  map[string]string          // Sorted %Previous structure
+	global   map[string]string          // 'global' variables
+	var_     map[string]string          // 'var' bot variables
+	sub      map[string]string          // 'sub' substitutions
+	person   map[string]string          // 'person' substitutions
+	array    map[string][]string        // 'array'
+	users    map[string][]*UserData     // user variables
+	freeze   map[string][]*UserData     // frozen user variables
+	includes map[string]map[string]bool // included topics
+	inherits map[string]map[string]bool // inherited topics
+	objlangs map[string]string          // object macro languages]
+	topics   map[string]*astTopic       // main topic structure
+	thats    map[string]*thatTopic      // %Previous mapper
+	sorted   *sortBuffer                // Sorted data from SortReplies()
 }
 
 func New() *RiveScript {
@@ -62,8 +61,7 @@ func New() *RiveScript {
 	rs.inherits = map[string]map[string]bool{}
 	rs.topics = map[string]*astTopic{}
 	rs.thats = map[string]*thatTopic{}
-	rs.sortedTopics = map[string]string{}
-	rs.sortedThats = map[string]string{}
+	rs.sorted = new(sortBuffer)
 	return rs
 }
 
@@ -255,8 +253,8 @@ matching to work efficiently!
 */
 func (rs RiveScript) SortReplies() {
 	// (Re)initialize the sort cache.
-	rs.sortedTopics = map[string]string{}
-	rs.sortedThats = map[string]string{}
+	rs.sorted.topics = map[string][]sortedTriggerEntry{}
+	rs.sorted.thats = map[string][]sortedTriggerEntry{}
 	rs.say("Sorting triggers...")
 
 	// Loop through all the topics.
@@ -266,9 +264,21 @@ func (rs RiveScript) SortReplies() {
 		// Collect a list of all the triggers we're going to worry about. If this
 		// topic inherits another topic, we need to recursively add those to the
 		// list as well.
-		_ = rs.getTopicTriggers(topic, rs.topics, nil)
-		_ = rs.getTopicTriggers(topic, nil, rs.thats)
+		allTriggers := rs.getTopicTriggers(topic, rs.topics, nil)
+
+		// Sort these triggers.
+		rs.sorted.topics[topic] = rs.sortTriggerSet(allTriggers, true)
+
+		// Get all of the %Previous triggers for this topic.
+		thatTriggers := rs.getTopicTriggers(topic, nil, rs.thats)
+
+		// And sort them, too.
+		rs.sorted.thats[topic] = rs.sortTriggerSet(thatTriggers, false)
 	}
+
+	// Sort the substitution lists.
+	rs.sorted.sub = sortList(rs.sub)
+	rs.sorted.person = sortList(rs.person)
 }
 
 // DumpTopics is a debug method which dumps the topic structure from the bot's memory.
@@ -290,5 +300,28 @@ func (rs RiveScript) DumpTopics() {
 				fmt.Printf("    @ %s\n", trigger.redirect)
 			}
 		}
+	}
+}
+
+// DumpSorted is a debug method which dumps the sort tree from the bot's memory.
+func (rs RiveScript) DumpSorted() {
+	rs._dumpSorted(rs.sorted.topics, "Topics")
+	rs._dumpSorted(rs.sorted.thats, "Thats")
+	rs._dumpSortedList(rs.sorted.sub, "Substitutions")
+	rs._dumpSortedList(rs.sorted.person, "Person Substitutions")
+}
+func (rs RiveScript) _dumpSorted(tree map[string][]sortedTriggerEntry, label string) {
+	fmt.Printf("Sort Buffer: %s\n", label)
+	for topic, data := range tree {
+		fmt.Printf("  Topic: %s\n", topic)
+		for _, trigger := range data {
+			fmt.Printf("    + %s\n", trigger.trigger)
+		}
+	}
+}
+func (rs RiveScript) _dumpSortedList(list []string, label string) {
+	fmt.Printf("Sort buffer: %s\n", label)
+	for _, item := range list {
+		fmt.Printf("  %s\n", item)
 	}
 }
