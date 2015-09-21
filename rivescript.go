@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	//_Parser "./parser.go"
 )
@@ -25,6 +26,7 @@ type RiveScript struct {
 	Strict bool // Strictly enforce RiveScript syntax
 	Depth  int  // Max depth for recursion
 	UTF8   bool // Support UTF-8 RiveScript code
+	UnicodePunctuation *regexp.Regexp
 
 	// Internal data structures
 	global   map[string]string          // 'global' variables
@@ -32,7 +34,7 @@ type RiveScript struct {
 	sub      map[string]string          // 'sub' substitutions
 	person   map[string]string          // 'person' substitutions
 	array    map[string][]string        // 'array'
-	users    map[string][]*UserData     // user variables
+	users    map[string]*UserData       // user variables
 	freeze   map[string][]*UserData     // frozen user variables
 	includes map[string]map[string]bool // included topics
 	inherits map[string]map[string]bool // inherited topics
@@ -40,6 +42,9 @@ type RiveScript struct {
 	topics   map[string]*astTopic       // main topic structure
 	thats    map[string]*thatTopic      // %Previous mapper
 	sorted   *sortBuffer                // Sorted data from SortReplies()
+
+	// State information.
+	currentUser string
 }
 
 func New() *RiveScript {
@@ -48,6 +53,7 @@ func New() *RiveScript {
 	rs.Strict = true
 	rs.Depth = 50
 	rs.UTF8 = false
+	rs.UnicodePunctuation = regexp.MustCompile(`[.,!?;:]`)
 
 	// Initialize all the data structures.
 	rs.global = map[string]string{}
@@ -55,7 +61,7 @@ func New() *RiveScript {
 	rs.sub = map[string]string{}
 	rs.person = map[string]string{}
 	rs.array = map[string][]string{}
-	//rs.users = map[string]*UserData{}
+	rs.users = map[string]*UserData{}
 	//rs.freeze
 	rs.includes = map[string]map[string]bool{}
 	rs.inherits = map[string]map[string]bool{}
@@ -79,7 +85,7 @@ func (rs RiveScript) say(message string, a ...interface{}) {
 
 // warn prints a warning message for non-fatal errors
 func (rs RiveScript) warn(message string, a ...interface{}) {
-	fmt.Printf(message+"\n", a...)
+	fmt.Printf("[WARN] "+message+"\n", a...)
 }
 
 // syntax is like warn but takes a filename and line number.
@@ -207,7 +213,6 @@ func (rs RiveScript) parse(path string, lines []string) {
 
 		// Merge in the topic inclusions/inherits.
 		for included, _ := range data.includes {
-			fmt.Printf("%v", included)
 			rs.includes[topic][included] = true
 		}
 		for inherited, _ := range data.inherits {

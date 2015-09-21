@@ -5,6 +5,28 @@ package rivescript
 // User data, key/value pairs about the user.
 type UserData struct {
 	data map[string]string
+	lastMatch string
+	inputHistory []string
+	replyHistory []string
+}
+
+// NewUser creates a new user profile.
+func NewUser() *UserData {
+	user := new(UserData)
+	user.data = map[string]string{}
+	user.data["topic"] = "random"
+
+	user.lastMatch = ""
+
+	user.inputHistory = []string{
+		"undefined", "undefined", "undefined", "undefined", "undefined",
+		"undefined", "undefined", "undefined", "undefined",
+	}
+	user.replyHistory = []string{
+		"undefined", "undefined", "undefined", "undefined", "undefined",
+		"undefined", "undefined", "undefined", "undefined",
+	}
+	return user
 }
 
 // Sort buffer data, for RiveScript.SortReplies()

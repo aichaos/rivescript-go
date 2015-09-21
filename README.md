@@ -17,7 +17,12 @@ Rough estimation of the current progress on RiveScript-Go:
 - [x] `SortReplies()` to sort the data in the bot's memory
   - [x] Topic inheritence/includes
 - [ ] `Reply()` to fetch a reply.
+  - [x] Inbound message formatting and substitutions
+  - [x] Preparing triggers for regular expression engine
+  - [ ] Handling `%Previous` responses
+  - [ ] Handling conditional responses
   - [ ] Response tag processing
+  - [ ] Handling the BEGIN block
 - [ ] Make a standalone "shell" program for quickly testing the bot
 - [ ] Unit tests to make sure it has feature parity with other implementations
 
