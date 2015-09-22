@@ -10,7 +10,7 @@ Usage is simple. In your Golang code:
 
 	func main() {
 		bot := rivescript.New()
-		jsHandler := rivescript_js.New()
+		jsHandler := rivescript_js.New(bot)
 		bot.SetHandler("javascript", jsHandler)
 
 		// and go on as normal

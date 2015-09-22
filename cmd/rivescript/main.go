@@ -1,3 +1,19 @@
+/*
+Stand-alone RiveScript Interpreter.
+
+This is an example program included with the RiveScript Go library. It serves as
+a way to quickly demo and test a RiveScript bot.
+
+Usage
+
+	rivescript [options] /path/to/rive/files
+
+Options
+
+	--debug     Enable debug mode.
+	--utf8      Enable UTF-8 support within RiveScript.
+	--depth     Override the recursion depth limit (default 50)
+*/
 package main
 
 import (

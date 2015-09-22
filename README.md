@@ -8,25 +8,11 @@ to write trigger/response pairs for building up a bot's intelligence.
 
 **This project is currently in Beta status.**
 
-## Development Roadmap
+## Documentation
 
-Rough estimation of the current progress on RiveScript-Go:
-
-- [x] `LoadFile`, `LoadDirectory` and parsing RiveScript document (AST)
-- [x] Reading parsed data into bot's main memory
-- [x] `SortReplies()` to sort the data in the bot's memory
-  - [x] Topic inheritence/includes
-- [x] `Reply()` to fetch a reply.
-  - [x] Inbound message formatting and substitutions
-  - [x] Preparing triggers for regular expression engine
-  - [x] Handling `%Previous` responses
-  - [x] Handling conditional responses
-  - [x] Response tag processing
-  - [x] Handling the BEGIN block
-- [x] Sanity check the code by making sure everything in `testsuite.rive` works as expected
-- [x] Write all the miscellaneous config functions such as `SetUservar()`
-- [x] Unit tests to make sure it has feature parity with other implementations
-- [x] Make a standalone "shell" program for quickly testing the bot
+* RiveScript Library: <http://godoc.org/github.com/aichaos/rivescript-go>
+* RiveScript Stand-alone Interpreter: <http://godoc.org/github.com/aichaos/rivescript-go/cmd/rivescript>
+* JavaScript Object Macros: <http://godoc.org/github.com/aichaos/rivescript-go/lang/rivescript_js>
 
 ## Installation
 

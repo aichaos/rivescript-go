@@ -6,7 +6,10 @@ import (
 )
 
 // Constants
-const RS_VERSION float64 = 2.0
+const (
+	VERSION = "0.0.1"
+	RS_VERSION float64 = 2.0
+)
 
 /******************************************************************************
  * Constructor and Debug Methods                                              *
@@ -70,8 +73,7 @@ func New() *RiveScript {
 }
 
 func (rs *RiveScript) Version() string {
-	// TODO: versioning
-	return "0.0.1"
+	return VERSION
 }
 
 // say prints a debugging message
