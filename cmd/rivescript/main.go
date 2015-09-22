@@ -10,7 +10,7 @@ import (
 
 func main() {
 	bot := rivescript.New()
-	bot.UTF8 = true
+	bot.Debug = true
 	fmt.Printf("RiveScript version v%s\n", bot.Version())
 	//bot.Debug = true
 	//bot.Stream("+ hello bot\n" +
@@ -24,20 +24,32 @@ func main() {
 	// 	"+ *\n" +
 	// 	"- I dunno.")
 	// bot.LoadFile("eg/brain/rpg.rive")
-	bot.LoadDirectory("eg/brain")
+	//bot.LoadDirectory("eg/brain")
+	bot.LoadFile("testsuite.rive")
+
 	bot.SortReplies()
+	// bot.Debug = true
+	// bot.DumpTopics()
+	// bot.DumpSorted()
+	//bot.Debug = true
 	// fmt.Printf("--- DONE SORTING ---\n")
 	// bot.DumpSorted()
 	// bot.LoadFile("eg/brain/begin.rive")
 	// bot.LoadFile("eg/brain/admin.rive")
 	//bot.LoadFile("test.rive")
 	// bot.DumpTopics()
+	bot.Debug = true
 
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("You> ")
 		text, _ := reader.ReadString('\n')
-		reply := bot.Reply("local-user", strings.TrimSpace(text))
+		text = strings.TrimSpace(text)
+		if len(text) == 0 {
+			continue
+		}
+
+		reply := bot.Reply("local-user", text)
 		fmt.Printf("Bot> %s\n", reply)
 	}
 }

@@ -43,7 +43,7 @@ func (rs RiveScript) Reply(username string, message string) string {
 		}
 
 		reply = begin
-		// reply = rs.processTags(reply)
+		reply = rs.processTags(username, message, reply, []string{}, []string{}, 0)
 	} else {
 		reply = rs.getReply(username, message, false, 0)
 	}
@@ -51,9 +51,9 @@ func (rs RiveScript) Reply(username string, message string) string {
 	// Save their message history.
 	user := rs.users[username]
 	user.inputHistory = user.inputHistory[:len(user.inputHistory)-1]    // Pop
-	user.inputHistory = append([]string{message}, user.inputHistory...) // Unshift
+	user.inputHistory = append([]string{strings.TrimSpace(message)}, user.inputHistory...) // Unshift
 	user.replyHistory = user.replyHistory[:len(user.replyHistory)-1]    // Pop
-	user.replyHistory = append([]string{reply}, user.replyHistory...)   // Unshift
+	user.replyHistory = append([]string{strings.TrimSpace(reply)}, user.replyHistory...)   // Unshift
 
 	// Unset the current user's ID.
 	rs.currentUser = ""
@@ -117,7 +117,85 @@ func (rs RiveScript) getReply(username string, message string, isBegin bool, ste
 	// redirection. This is because in a redirection, "lastReply" is still gonna
 	// be the same as it was the first time, resulting in an infinite loop!
 	if step == 0 {
-		// TODO
+		allTopics := []string{topic}
+		if len(rs.topics[topic].includes) > 0 || len(rs.topics[topic].inherits) > 0 {
+			// Get ALL the topics!
+			allTopics = rs.getTopicTree(topic, 0)
+		}
+
+		// Scan them all.
+		for _, top := range allTopics {
+			rs.say("Checking topic %s for any %%Previous's.", top)
+
+			if len(rs.sorted.thats[top]) > 0 {
+				rs.say("There's a %%Previous in this topic!")
+
+				// Get the bot's last reply to the user.
+				lastReply := rs.users[username].replyHistory[0]
+
+				// Format the bot's reply the same way as the human's.
+				lastReply = rs.formatMessage(lastReply, true)
+				rs.say("Bot's last reply: %s", lastReply)
+
+				// See if it's a match.
+				for _, trig := range rs.sorted.thats[top] {
+					pattern := trig.pointer.previous
+					botside := rs.triggerRegexp(username, pattern)
+					rs.say("Try to match lastReply (%s) to %s (%s)", lastReply, pattern, botside)
+
+					// Match?
+					matcher := re.MustCompile(fmt.Sprintf("^%s$", botside))
+					match := matcher.FindStringSubmatch(lastReply)
+					if len(match) > 0 {
+						// Huzzah! See if OUR message is right too...
+						rs.say("Bot side matched!")
+
+						// Collect the bot stars.
+						thatStars = []string{}
+						if len(match) > 1 {
+							for i, _ := range match[1:] {
+								thatStars = append(thatStars, match[i+1])
+							}
+						}
+
+						// Compare the triggers to the user's message.
+						userSide := trig.pointer
+						regexp := rs.triggerRegexp(username, userSide.trigger)
+						rs.say("Try to match %s against %s (%s)", message, userSide.trigger, regexp)
+
+						// If the trigger is atomic, we don't need to deal with the regexp engine.
+						isMatch := false
+						if isAtomic(userSide.trigger) {
+							if message == regexp {
+								isMatch = true
+							}
+						} else {
+							matcher := re.MustCompile(fmt.Sprintf("^%s$", regexp))
+							match := matcher.FindStringSubmatch(message)
+							if len(match) > 0 {
+								isMatch = true
+
+								// Get the user's message stars.
+								if len(match) > 1 {
+									for i, _ := range match[1:] {
+										stars = append(stars, match[i+1])
+									}
+								}
+							}
+						}
+
+						// Was it a match?
+						if isMatch {
+							// Keep the trigger pointer.
+							matched = userSide
+							foundMatch = true
+							matchedTrigger = userSide.trigger
+							break
+						}
+					}
+				}
+			}
+		}
 	}
 
 	// Search their topic for a match to their trigger.
@@ -143,7 +221,7 @@ func (rs RiveScript) getReply(username string, message string, isBegin bool, ste
 					// Collect the stars.
 					if len(match) > 1 {
 						for i, _ := range match[1:] {
-							stars = append(stars, match[i])
+							stars = append(stars, match[i+1])
 						}
 					}
 				}
@@ -172,13 +250,73 @@ func (rs RiveScript) getReply(username string, message string, isBegin bool, ste
 			if len(matched.redirect) > 0 {
 				rs.say("Redirecting us to %s", matched.redirect)
 				redirect := matched.redirect
-				//redirect = rs.processTags() TODO
+				redirect = rs.processTags(username, message, redirect, stars, thatStars, 0)
 				rs.say("Pretend user said: %s", redirect)
 				reply = rs.getReply(username, redirect, isBegin, step+1)
 				break
 			}
 
-			// Check the conditionals. TODO
+			// Check the conditionals.
+			for _, row := range matched.condition {
+				halves := strings.Split(row, "=>")
+				if len(halves) == 2 {
+					condition := re_condition.FindStringSubmatch(strings.TrimSpace(halves[0]))
+					if len(condition) > 0 {
+						left := strings.TrimSpace(condition[1])
+						eq := condition[2]
+						right := strings.TrimSpace(condition[3])
+						potreply := strings.TrimSpace(halves[1]) // Potential reply
+
+						// Process tags all around
+						left = rs.processTags(username, message, left, stars, thatStars, step)
+						right = rs.processTags(username, message, right, stars, thatStars, step)
+
+						// Defaults?
+						if len(left) == 0 {
+							left = "undefined"
+						}
+						if len(right) == 0 {
+							right = "undefined"
+						}
+
+						rs.say("Check if %s %s %s", left, eq, right)
+
+						// Validate it.
+						passed := false
+						if eq == "eq" || eq == "==" {
+							if left == right {
+								passed = true
+							}
+						} else if eq == "ne" || eq == "!=" || eq == "<>" {
+							if left != right {
+								passed = true
+							}
+						} else {
+							// Dealing with numbers here.
+							iLeft, errLeft := strconv.Atoi(left)
+							iRight, errRight := strconv.Atoi(right)
+							if errLeft == nil && errRight == nil {
+								if eq == "<" && iLeft < iRight {
+									passed = true
+								} else if eq == "<=" && iLeft <= iRight {
+									passed = true
+								} else if eq == ">" && iLeft > iRight {
+									passed = true
+								} else if eq == ">=" && iLeft >= iRight {
+									passed = true
+								}
+							} else {
+								rs.warn("Failed to evaluate numeric condition!")
+							}
+						}
+
+						if passed {
+							reply = potreply
+							break
+						}
+					}
+				}
+			}
 
 			// Have our reply yet?
 			if len(reply) > 0 {
@@ -207,7 +345,6 @@ func (rs RiveScript) getReply(username string, message string, isBegin bool, ste
 
 			// Get a random reply.
 			if len(bucket) > 0 {
-				rs.say("BUCKET LENGTH: %d", len(bucket))
 				reply = bucket[rand.Intn(len(bucket))]
 			}
 			break
@@ -225,12 +362,41 @@ func (rs RiveScript) getReply(username string, message string, isBegin bool, ste
 
 	// Process tags for the BEGIN block.
 	if isBegin {
-		// TODO
-	} else {
-		// reply = processTags TODO
-	}
+		// The BEGIN block can set {topic} and user vars.
 
-	_ = thatStars
+		// Topic setter
+		match := re_topic.FindStringSubmatch(reply)
+		giveup := 0
+		for len(match) > 0 {
+			giveup++
+			if giveup > rs.Depth {
+				rs.warn("Infinite loop looking for topic tag!")
+				break
+			}
+			name := match[1]
+			rs.users[username].data["topic"] = name
+			reply = strings.Replace(reply, fmt.Sprintf("{topic=%s}", name), "", -1)
+			match = re_topic.FindStringSubmatch(reply)
+		}
+
+		// Set user vars
+		match = re_set.FindStringSubmatch(reply)
+		giveup = 0
+		for len(match) > 0 {
+			giveup++
+			if giveup > rs.Depth {
+				rs.warn("Infinite loop looking for set tag!")
+				break
+			}
+			name := match[1]
+			value := match[2]
+			rs.users[username].data[name] = value
+			reply = strings.Replace(reply, fmt.Sprintf("<set %s=%s>", name, value), "", -1)
+			match = re_set.FindStringSubmatch(reply)
+		}
+	} else {
+		reply = rs.processTags(username, message, reply, stars, thatStars, 0)
+	}
 
 	return reply
 }

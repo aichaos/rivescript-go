@@ -16,13 +16,15 @@ Rough estimation of the current progress on RiveScript-Go:
 - [x] Reading parsed data into bot's main memory
 - [x] `SortReplies()` to sort the data in the bot's memory
   - [x] Topic inheritence/includes
-- [ ] `Reply()` to fetch a reply.
+- [x] `Reply()` to fetch a reply.
   - [x] Inbound message formatting and substitutions
   - [x] Preparing triggers for regular expression engine
-  - [ ] Handling `%Previous` responses
-  - [ ] Handling conditional responses
-  - [ ] Response tag processing
-  - [ ] Handling the BEGIN block
+  - [x] Handling `%Previous` responses
+  - [x] Handling conditional responses
+  - [x] Response tag processing
+  - [x] Handling the BEGIN block
+- [x] Sanity check the code by making sure everything in `testsuite.rive` works as expected
+- [ ] Write all the miscellaneous config functions such as `SetUservar()`
 - [ ] Make a standalone "shell" program for quickly testing the bot
 - [ ] Unit tests to make sure it has feature parity with other implementations
 

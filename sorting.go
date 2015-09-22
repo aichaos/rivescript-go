@@ -244,16 +244,20 @@ func sortByWords(running []sortedTriggerEntry, triggers map[int][]sortedTriggerE
 	for _, wc := range sortedWords {
 		// Triggers with equal word lengths should be sorted by overall trigger length.
 		var sortedPatterns []string
-		patternMap := map[string]sortedTriggerEntry{}
+		patternMap := map[string][]sortedTriggerEntry{}
+
 		for _, trig := range triggers[wc] {
 			sortedPatterns = append(sortedPatterns, trig.trigger)
-			patternMap[trig.trigger] = trig
+			if _, ok := patternMap[trig.trigger]; !ok {
+				patternMap[trig.trigger] = []sortedTriggerEntry{}
+			}
+			patternMap[trig.trigger] = append(patternMap[trig.trigger], trig)
 		}
 		sort.Sort(sort.Reverse(byLength(sortedPatterns)))
 
 		// Add the triggers to the running triggers bucket.
 		for _, pattern := range sortedPatterns {
-			running = append(running, patternMap[pattern])
+			running = append(running, patternMap[pattern]...)
 		}
 	}
 
@@ -270,16 +274,26 @@ higher priority than simply `*`.
 */
 func sortByLength(running []sortedTriggerEntry, triggers []sortedTriggerEntry) []sortedTriggerEntry {
 	var sortedPatterns []string
-	patternMap := map[string]sortedTriggerEntry{}
+	patternMap := map[string][]sortedTriggerEntry{}
 	for _, trig := range triggers {
 		sortedPatterns = append(sortedPatterns, trig.trigger)
-		patternMap[trig.trigger] = trig
+		if _, ok := patternMap[trig.trigger]; !ok {
+			patternMap[trig.trigger] = []sortedTriggerEntry{}
+		}
+		patternMap[trig.trigger] = append(patternMap[trig.trigger], trig)
 	}
 	sort.Sort(sort.Reverse(byLength(sortedPatterns)))
 
+	// Only loop through unique patterns.
+	patternSet := map[string]bool{}
+
 	// Add them to the running triggers bucket.
 	for _, pattern := range sortedPatterns {
-		running = append(running, patternMap[pattern])
+		if _, ok := patternSet[pattern]; ok {
+			continue
+		}
+		patternSet[pattern] = true
+		running = append(running, patternMap[pattern]...)
 	}
 
 	return running

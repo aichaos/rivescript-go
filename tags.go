@@ -4,6 +4,8 @@ package rivescript
 
 import (
 	"fmt"
+	"math/rand"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -45,6 +47,7 @@ func (rs RiveScript) triggerRegexp(username string, pattern string) string {
 	pattern = strings.Replace(pattern, "#", `(\d+?)`, -1)
 	pattern = strings.Replace(pattern, "_", `(\w+?)`, -1)
 	pattern = re_weight.ReplaceAllString(pattern, "") // Remove {weight} tags
+	pattern = re_inherits.ReplaceAllString(pattern, "") // Remove {inherits} tags
 	pattern = strings.Replace(pattern, "<zerowidthstar>", `(.*?)`, -1)
 
 	// UTF-8 mode special characters.
@@ -170,12 +173,305 @@ func (rs RiveScript) triggerRegexp(username string, pattern string) string {
 	return pattern
 }
 
+/*
+processTags processes tags in a reply element.
+
+Params:
+- username: The name of the user.
+- message: The user's message.
+- reply: The reply element to process tags on.
+- st: Array of matched stars in the trigger.
+- bst: Array of matched bot stars in a %Previous.
+- step: Recursion depth counter.
+*/
+func (rs RiveScript) processTags(username string, message string, reply string, st []string, bst []string, step int) string {
+	// Prepare the stars and botstars.
+	stars := []string{""}
+	stars = append(stars, st...)
+	botstars := []string{""}
+	botstars = append(botstars, bst...)
+	if len(stars) == 1 {
+		stars = append(stars, "undefined")
+	}
+	if len(botstars) == 1 {
+		botstars = append(botstars, "undefined")
+	}
+
+	// Tag shortcuts.
+	reply = strings.Replace(reply, "<person>", "{person}<star>{/person}", -1)
+	reply = strings.Replace(reply, "<@>", "{@<star>}", -1)
+	reply = strings.Replace(reply, "<formal>", "{formal}<star>{/formal}", -1)
+	reply = strings.Replace(reply, "<sentence>", "{sentence}<star>{/sentence}", -1)
+	reply = strings.Replace(reply, "<uppercase>", "{uppercase}<star>{/uppercase}", -1)
+	reply = strings.Replace(reply, "<lowercase>", "{lowercase}<star>{/lowercase}", -1)
+
+	// Weight and star tags.
+	reply = re_weight.ReplaceAllString(reply, "") // Remove {weight} tags.
+	reply = strings.Replace(reply, "<star>", stars[1], -1)
+	reply = strings.Replace(reply, "<botstar>", botstars[1], -1)
+	for i := 1; i <= 9; i++ {
+		if len(stars) > i {
+			reply = strings.Replace(reply, fmt.Sprintf("<star%d>", i), stars[i], -1)
+		}
+		if len(botstars) > i {
+			reply = strings.Replace(reply, fmt.Sprintf("<botstar%d>", i), botstars[i], -1)
+		}
+	}
+
+	// <input> and <reply>
+	reply = strings.Replace(reply, "<input>", "<input1>", -1)
+	reply = strings.Replace(reply, "<reply>", "<reply1>", -1)
+	for i := 1; i <= 9; i++ {
+		reply = strings.Replace(reply, fmt.Sprintf("<input%d>", i), rs.users[username].inputHistory[i-1], -1)
+		reply = strings.Replace(reply, fmt.Sprintf("<reply%d>", i), rs.users[username].replyHistory[i-1], -1)
+	}
+
+	// <id> and escape codes.
+	reply = strings.Replace(reply, "<id>", username, -1)
+	reply = strings.Replace(reply, `\s`, " ", -1)
+	reply = strings.Replace(reply, `\n`, "\n", -1)
+	reply = strings.Replace(reply, `\#`, "#", -1)
+
+	// {random}
+	match := re_random.FindStringSubmatch(reply)
+	giveup := 0
+	for len(match) > 0 {
+		giveup++
+		if giveup > rs.Depth {
+			rs.warn("Infinite loop looking for random tag!")
+			break
+		}
+
+		random := []string{}
+		text := match[1]
+		if strings.Index(text, "|") > -1 {
+			random = strings.Split(text, "|")
+		} else {
+			random = strings.Split(text, " ")
+		}
+
+		output := ""
+		if len(random) > 0 {
+			output = random[rand.Intn(len(random))]
+		}
+
+		reply = strings.Replace(reply, fmt.Sprintf("{random}%s{/random}", text), output, -1)
+		match = re_random.FindStringSubmatch(reply)
+	}
+
+	// Person substitution and string formatting.
+	formats := []string{"person", "formal", "sentence", "uppercase", "lowercase"}
+	for _, format := range formats {
+		formatRegexp := regexp.MustCompile(fmt.Sprintf(`\{%s\}(.+?)\{/%s\}`, format, format))
+		match := formatRegexp.FindStringSubmatch(reply)
+		giveup := 0
+		for len(match) > 0 {
+			giveup++
+			if giveup > rs.Depth {
+				rs.warn("Infinite loop looking for %s tag!", format)
+				break
+			}
+
+			content := match[1]
+			replace := ""
+			if format == "person" {
+				replace = rs.substitute(content, rs.person, rs.sorted.person)
+			} else {
+				replace = stringFormat(format, content)
+			}
+
+			reply = strings.Replace(reply, fmt.Sprintf("{%s}%s{/%s}", format, content, format), replace, -1)
+			match = formatRegexp.FindStringSubmatch(reply)
+		}
+	}
+
+	// Handle all variable-related tags with an iterative regexp approach to
+	// allow for nesting of tags in arbitrary ways (think <set a=<get b>>)
+	// Dummy out the <call> tags first, because we don't handle them here.
+	reply = strings.Replace(reply, "<call>", "{__call__}", -1)
+	reply = strings.Replace(reply, "</call>", "{/__call__}", -1)
+	for {
+		// Look for tags that don't contain any other tags inside them.
+		matcher := re_anytag.FindStringSubmatch(reply)
+		if len(matcher) == 0 {
+			break // No tags left!
+		}
+
+		match := matcher[1]
+		parts := strings.Split(match, " ")
+		tag := strings.ToLower(parts[0])
+		data := ""
+		if len(parts) > 1 {
+			data = strings.Join(parts[1:], " ")
+		}
+		insert := ""
+
+		// Handle the various types of tags.
+		if tag == "bot" || tag == "env" {
+			// <bot> and <env> work similarly
+			var target map[string]string
+			if tag == "bot" {
+				target = rs.var_
+			} else {
+				target = rs.global
+			}
+
+			if strings.Index(data, "=") > -1 {
+				// Assigning the value.
+				parts := strings.Split(data, "=")
+				rs.say("Assign %s variable %s = %s", tag, parts[0], parts[1])
+				target[parts[0]] = parts[1]
+			} else {
+				// Getting a bot/env variable.
+				if _, ok := target[data]; ok {
+					insert = target[data]
+				} else {
+					insert = "undefined"
+				}
+			}
+		} else if tag == "set" {
+			// <set> user vars
+			parts := strings.Split(data, "=")
+			if len(parts) > 1 {
+				rs.say("Set uservar %s = %s", parts[0], parts[1])
+				rs.users[username].data[parts[0]] = parts[1]
+			} else {
+				rs.warn("Malformed <set> tag: %s", match)
+			}
+		} else if tag == "add" || tag == "sub" || tag == "mult" || tag == "div" {
+			// Math operator tags.
+			parts := strings.Split(data, "=")
+			name := parts[0]
+			strValue := parts[1]
+
+			// Initialize the variable?
+			if _, ok := rs.users[username].data[name]; !ok {
+				rs.users[username].data[name] = "0"
+			}
+
+			// Sanity check.
+			value, err := strconv.Atoi(strValue)
+			abort := false
+			if err != nil {
+				insert = fmt.Sprintf("[ERR: Math can't %s non-numeric value %s]", tag, value)
+				abort = true
+			}
+			orig, err := strconv.Atoi(rs.users[username].data[name])
+			if err != nil {
+				insert = fmt.Sprintf("[ERR: Math can't %s non-numeric user variable %s]", tag, name)
+				abort = true
+			}
+
+			if !abort {
+				result := orig
+				if tag == "add" {
+					result += value
+				} else if tag == "sub" {
+					result -= value
+				} else if tag == "mult" {
+					result *= value
+				} else if tag == "div" {
+					if value == 0 {
+						insert = "[ERR: Can't Divide By Zero]"
+					} else {
+						result /= value
+					}
+				}
+
+				if len(insert) == 0 {
+					// Save it to their account.
+					rs.users[username].data[name] = strconv.Itoa(result)
+				}
+			}
+		} else if tag == "get" {
+			// <get> user vars
+			if _, ok := rs.users[username].data[data]; ok {
+				insert = rs.users[username].data[data]
+			} else {
+				insert = "undefined"
+			}
+		} else {
+			// Unrecognized tag; preserve it.
+			insert = fmt.Sprintf("\x00%s\x01", match)
+		}
+
+		reply = strings.Replace(reply, fmt.Sprintf("<%s>", match), insert, -1)
+	}
+
+	// Recover mangled HTML-like tags.
+	reply = strings.Replace(reply, "\x00", "<", -1)
+	reply = strings.Replace(reply, "\x01", ">", -1)
+
+	// Topic setter.
+	match = re_topic.FindStringSubmatch(reply)
+	giveup = 0
+	for len(match) > 0 {
+		giveup++
+		if giveup > rs.Depth {
+			rs.warn("Infinite loop looking for topic tag!")
+			break
+		}
+
+		name := match[1]
+		rs.users[username].data["topic"] = name
+		reply = strings.Replace(reply, fmt.Sprintf("{topic=%s}", name), "", -1)
+		match = re_topic.FindStringSubmatch(reply)
+	}
+
+	// Inline redirector.
+	match = re_redirect.FindStringSubmatch(reply)
+	giveup = 0
+	for len(match) > 0 {
+		giveup++
+		if giveup > rs.Depth {
+			rs.warn("Infinite loop looking for redirect tag!")
+			break
+		}
+
+		target := strings.TrimSpace(match[1])
+		rs.say("Inline redirection to: %s", target)
+		subreply := rs.getReply(username, target, false, step+1)
+		reply = strings.Replace(reply, fmt.Sprintf("{@%s}", target), subreply, -1)
+		match = re_redirect.FindStringSubmatch(reply)
+	}
+
+	// Object caller.
+	reply = strings.Replace(reply, "{__call__}", "<call>", -1)
+	reply = strings.Replace(reply, "{/__call__}", "</call>", -1)
+	match = re_call.FindStringSubmatch(reply)
+	giveup = 0
+	for len(match) > 0 {
+		giveup++
+		if giveup > rs.Depth {
+			rs.warn("Infinite loop looking for call tags!")
+			break
+		}
+
+		text := strings.TrimSpace(match[1])
+		parts := strings.Split(text, " ")
+		obj := parts[0]
+		args := []string{}
+		if len(parts) > 1 {
+			args = parts[1:]
+		}
+
+		// Do we know this object?
+		// TODO: implement objects
+		_ = obj
+		_ = args
+		output := "[ERR: TODO]"
+
+		reply = strings.Replace(reply, fmt.Sprintf("<call>%s</call>", match[1]), output, -1)
+	}
+
+	return reply
+}
+
 // substitute applies a substitution to an input message.
 func (rs RiveScript) substitute(message string, subs map[string]string, sorted []string) string {
 	// Safety checking.
 	if len(subs) == 0 {
-		rs.warn("You forgot to call sortReplies()!")
-		return ""
+		return message
 	}
 
 	// Make placeholders each time we substitute something.

@@ -62,6 +62,7 @@ func (rs RiveScript) ParseSource(filename string, code []string) *astRoot {
 				} else {
 					objBuf = append(objBuf, line)
 				}
+				inobj = false
 			}
 			continue
 		}

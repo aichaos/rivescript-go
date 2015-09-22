@@ -134,3 +134,28 @@ func (rs RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopic
 
 	return triggers
 }
+
+/*
+getTopicTree returns an array of every topic related to a topic (all the
+topics it inherits or includes, plus all the topics included or inherited
+by those topics, and so on). The array includes the original topic, too.
+*/
+func (rs RiveScript) getTopicTree(topic string, depth int) []string {
+	// Break if we're in too deep.
+	if depth > rs.Depth {
+		rs.warn("Deep recursion while scanning topic tree!")
+		return []string{}
+	}
+
+	// Collect an array of all topics.
+	topics := []string{topic}
+
+	for includes, _ := range rs.topics[topic].includes {
+		topics = append(topics, rs.getTopicTree(includes, depth+1)...)
+	}
+	for inherits, _ := range rs.topics[topic].inherits {
+		topics = append(topics, rs.getTopicTree(inherits, depth+1)...)
+	}
+
+	return topics
+}

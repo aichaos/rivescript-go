@@ -40,10 +40,37 @@ func isAtomic(pattern string) bool {
 	specials := []string{"*", "#", "_", "(", "[", "<"}
 	for _, special := range specials {
 		if strings.Index(pattern, special) > -1 {
-			return true
+			return false
 		}
 	}
-	return false
+	return true
+}
+
+// stringFormat formats a string.
+func stringFormat(format string, text string) string {
+	if format == "uppercase" {
+		return strings.ToUpper(text)
+	} else if format == "lowercase" {
+		return strings.ToLower(text)
+	} else if format == "sentence" {
+		if len(text) > 1 {
+			return strings.ToUpper(text[0:1]) + strings.ToLower(text[1:])
+		} else {
+			return strings.ToUpper(text)
+		}
+	} else if format == "formal" {
+		words := strings.Split(text, " ")
+		result := []string{}
+		for _, word := range words {
+			if len(word) > 1 {
+				result = append(result, strings.ToUpper(word[0:1]) + strings.ToLower(word[1:]))
+			} else {
+				result = append(result, strings.ToUpper(word))
+			}
+		}
+		return strings.Join(result, " ")
+	}
+	return text
 }
 
 // quotemeta escapes a string for use in a regular expression.
