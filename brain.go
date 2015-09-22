@@ -14,8 +14,9 @@ import (
 Reply fetches a reply from the bot for a user's message.
 
 Params:
-- username: The name of the user requesting a reply.
-- message: The user's message.
+
+	username: The name of the user requesting a reply.
+	message: The user's message.
 */
 func (rs RiveScript) Reply(username string, message string) string {
 	rs.say("Asked to reply to [%s] %s", username, message)
@@ -65,10 +66,11 @@ func (rs RiveScript) Reply(username string, message string) string {
 getReply is the internal logic behind Reply().
 
 Params:
-- username: The name of the user requesting a reply.
-- message: The user's message.
-- isBegin: Whether this reply is for the "BEGIN Block" context or not.
-- step: Recursion depth counter.
+
+	username: The name of the user requesting a reply.
+	message: The user's message.
+	isBegin: Whether this reply is for the "BEGIN Block" context or not.
+	step: Recursion depth counter.
 */
 func (rs RiveScript) getReply(username string, message string, isBegin bool, step int) string {
 	// Needed to sort replies?

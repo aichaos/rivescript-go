@@ -121,10 +121,11 @@ JavaScript-like fashion. Example usage:
 message = regReplace(message, `hello (.+?)`, "goodbye $1")
 
 Params:
-- input: The input string to run the substitution against.
-- pattern: Literal string for a regular expression pattern.
-- result: String to substitute the result out for. You can use capture group
-  placeholders like $1 in this string.
+
+	input: The input string to run the substitution against.
+	pattern: Literal string for a regular expression pattern.
+	result: String to substitute the result out for. You can use capture group
+	        placeholders like $1 in this string.
 */
 func regReplace(input string, pattern string, result string) string {
 	reg := regexp.MustCompile(pattern)

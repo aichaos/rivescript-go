@@ -14,7 +14,8 @@ import (
 LoadFile loads a single RiveScript source file from disk.
 
 Params:
-- path: File path to
+
+	path: File path to
 */
 func (rs RiveScript) LoadFile(path string) {
 	rs.say("Load RiveScript file: %s", path)
@@ -41,8 +42,9 @@ func (rs RiveScript) LoadFile(path string) {
 LoadDirectory loads multiple RiveScript documents from a folder on disk.
 
 Params:
-- path: Path to the directory on disk
-- extensions...: List of file extensions to filter on, default is '.rive' and '.rs'
+
+	path: Path to the directory on disk
+	extensions...: List of file extensions to filter on, default is '.rive' and '.rs'
 */
 func (rs RiveScript) LoadDirectory(path string, extensions ...string) {
 	if len(extensions) == 0 {
@@ -64,7 +66,7 @@ func (rs RiveScript) LoadDirectory(path string, extensions ...string) {
 Stream loads RiveScript code from a text buffer.
 
 Params:
-- code: Raw source code of a RiveScript document, with line breaks after each line.
+	code: Raw source code of a RiveScript document, with line breaks after each line.
 */
 func (rs RiveScript) Stream(code string) {
 	lines := strings.Split(code, "\n")

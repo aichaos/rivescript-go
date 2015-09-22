@@ -177,12 +177,13 @@ func (rs RiveScript) triggerRegexp(username string, pattern string) string {
 processTags processes tags in a reply element.
 
 Params:
-- username: The name of the user.
-- message: The user's message.
-- reply: The reply element to process tags on.
-- st: Array of matched stars in the trigger.
-- bst: Array of matched bot stars in a %Previous.
-- step: Recursion depth counter.
+
+	username: The name of the user.
+	message: The user's message.
+	reply: The reply element to process tags on.
+	st: Array of matched stars in the trigger.
+	bst: Array of matched bot stars in a %Previous.
+	step: Recursion depth counter.
 */
 func (rs RiveScript) processTags(username string, message string, reply string, st []string, bst []string, step int) string {
 	// Prepare the stars and botstars.

@@ -21,8 +21,9 @@ type Subroutine func() string
 SetSubroutine defines a Go object macro from your program.
 
 Params:
-- name: The name of your subroutine for the `<call>` tag in RiveScript.
-- fn: A function with a prototype `func() string`
+
+	name: The name of your subroutine for the `<call>` tag in RiveScript.
+	fn: A function with a prototype `func() string`
 */
 
 func (rs RiveScript) SetSubroutine(name string, fn Subroutine) bool {

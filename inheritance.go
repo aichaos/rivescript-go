@@ -16,9 +16,10 @@ topic. Some triggers will come out with an {inherits} tag to signify
 inheritance depth.
 
 Params:
-- topic: The name of the topic to scan through
-- topics: The `rs.topics` structure if crawling the normal reply tree
-- thats: The `rs.thats` structure if crawling the %Previous reply tree
+
+	topic: The name of the topic to scan through
+	topics: The `rs.topics` structure if crawling the normal reply tree
+	thats: The `rs.thats` structure if crawling the %Previous reply tree
 
 You must *ONLY* provide `topics` OR `thats`, not both. Make the other one `nil`.
 
