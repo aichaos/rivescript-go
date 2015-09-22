@@ -23,13 +23,13 @@ func ExampleRiveScript() {
 	fmt.Printf("The bot says: %s", reply)
 }
 
-func ExampleRiveScript_JavaScript() {
+func ExampleRiveScript_javascript() {
 	// Example for configuring the JavaScript object macro handler via Otto.
 
 	bot := rivescript.New()
 
 	// Create the JS handler.
-	jsHandler := rivescript_js.New()
+	jsHandler := rivescript_js.New(bot)
 	bot.SetHandler("javascript", jsHandler)
 
 	// Now we can use object macros written in JS!
@@ -40,8 +40,20 @@ func ExampleRiveScript_JavaScript() {
 			return parseInt(a) + parseInt(b);
 		< object
 
+		> object setname javascript
+			// Set the user's name via JavaScript
+			var uid = rs.CurrentUser();
+			rs.SetUservar(uid, args[0], args[1])
+		< object
+
 		+ add # and #
 		- <star1> + <star2> = <call>add <star1> <star2></call>
+
+		+ my name is *
+		- I will remember that.<call>setname <id> <formal></call>
+
+		+ what is my name
+		- You are <get name>.
 	`)
 	bot.SortReplies()
 

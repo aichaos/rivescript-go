@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (rs RiveScript) parseSource(filename string, code []string) *astRoot {
+func (rs *RiveScript) parseSource(filename string, code []string) *astRoot {
 	rs.say("In parse!")
 
 	// Eventual return structure

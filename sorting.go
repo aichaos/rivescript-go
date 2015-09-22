@@ -22,7 +22,7 @@ function will return a list of sortedTriggerEntry items, and it's intended to
 have no duplicate trigger patterns (unless the source RiveScript code explicitly
 uses the same duplicate pattern twice, which is a user error).
 */
-func (rs RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevious bool) []sortedTriggerEntry {
+func (rs *RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevious bool) []sortedTriggerEntry {
 	// Create a priority map, of priority numbers -> their triggers.
 	prior := map[int][]sortedTriggerEntry{}
 

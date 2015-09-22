@@ -32,7 +32,7 @@ func main() {
 	bot.Depth = *depth
 
 	// JavaScript object macro handler.
-	jsHandler := rivescript_js.New()
+	jsHandler := rivescript_js.New(bot)
 	bot.SetHandler("javascript", jsHandler)
 
 	// Load the target directory.

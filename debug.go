@@ -7,7 +7,7 @@ import (
 )
 
 // DumpTopics is a debug method which dumps the topic structure from the bot's memory.
-func (rs RiveScript) DumpTopics() {
+func (rs *RiveScript) DumpTopics() {
 	for topic, data := range rs.topics {
 		fmt.Printf("Topic: %s\n", topic)
 		for _, trigger := range data.triggers {
@@ -29,13 +29,13 @@ func (rs RiveScript) DumpTopics() {
 }
 
 // DumpSorted is a debug method which dumps the sort tree from the bot's memory.
-func (rs RiveScript) DumpSorted() {
+func (rs *RiveScript) DumpSorted() {
 	rs._dumpSorted(rs.sorted.topics, "Topics")
 	rs._dumpSorted(rs.sorted.thats, "Thats")
 	rs._dumpSortedList(rs.sorted.sub, "Substitutions")
 	rs._dumpSortedList(rs.sorted.person, "Person Substitutions")
 }
-func (rs RiveScript) _dumpSorted(tree map[string][]sortedTriggerEntry, label string) {
+func (rs *RiveScript) _dumpSorted(tree map[string][]sortedTriggerEntry, label string) {
 	fmt.Printf("Sort Buffer: %s\n", label)
 	for topic, data := range tree {
 		fmt.Printf("  Topic: %s\n", topic)
@@ -44,7 +44,7 @@ func (rs RiveScript) _dumpSorted(tree map[string][]sortedTriggerEntry, label str
 		}
 	}
 }
-func (rs RiveScript) _dumpSortedList(list []string, label string) {
+func (rs *RiveScript) _dumpSortedList(list []string, label string) {
 	fmt.Printf("Sort buffer: %s\n", label)
 	for _, item := range list {
 		fmt.Printf("  %s\n", item)

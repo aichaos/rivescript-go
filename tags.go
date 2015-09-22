@@ -11,7 +11,7 @@ import (
 )
 
 // formatMessage formats a user's message for safe processing.
-func (rs RiveScript) formatMessage(msg string, botReply bool) string {
+func (rs *RiveScript) formatMessage(msg string, botReply bool) string {
 	// Lowercase it.
 	msg = strings.ToLower(msg)
 
@@ -37,7 +37,7 @@ func (rs RiveScript) formatMessage(msg string, botReply bool) string {
 }
 
 // triggerRegexp prepares a trigger pattern for the regular expression engine.
-func (rs RiveScript) triggerRegexp(username string, pattern string) string {
+func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 	// If the trigger is simply '*' then the * needs to become (.*?)
 	// to match the blank string too.
 	pattern = re_zerowidthstar.ReplaceAllString(pattern, "<zerowidthstar>")
@@ -185,7 +185,7 @@ Params:
 	bst: Array of matched bot stars in a %Previous.
 	step: Recursion depth counter.
 */
-func (rs RiveScript) processTags(username string, message string, reply string, st []string, bst []string, step int) string {
+func (rs *RiveScript) processTags(username string, message string, reply string, st []string, bst []string, step int) string {
 	// Prepare the stars and botstars.
 	stars := []string{""}
 	stars = append(stars, st...)
@@ -473,7 +473,7 @@ func (rs RiveScript) processTags(username string, message string, reply string, 
 }
 
 // substitute applies a substitution to an input message.
-func (rs RiveScript) substitute(message string, subs map[string]string, sorted []string) string {
+func (rs *RiveScript) substitute(message string, subs map[string]string, sorted []string) string {
 	// Safety checking.
 	if len(subs) == 0 {
 		return message

@@ -17,7 +17,7 @@ Params:
 
 	path: File path to
 */
-func (rs RiveScript) LoadFile(path string) {
+func (rs *RiveScript) LoadFile(path string) {
 	rs.say("Load RiveScript file: %s", path)
 
 	fh, err := os.Open(path)
@@ -46,7 +46,7 @@ Params:
 	path: Path to the directory on disk
 	extensions...: List of file extensions to filter on, default is '.rive' and '.rs'
 */
-func (rs RiveScript) LoadDirectory(path string, extensions ...string) {
+func (rs *RiveScript) LoadDirectory(path string, extensions ...string) {
 	if len(extensions) == 0 {
 		extensions = []string{".rive", ".rs"}
 	}
@@ -79,7 +79,7 @@ Stream loads RiveScript code from a text buffer.
 Params:
 	code: Raw source code of a RiveScript document, with line breaks after each line.
 */
-func (rs RiveScript) Stream(code string) {
+func (rs *RiveScript) Stream(code string) {
 	lines := strings.Split(code, "\n")
 	rs.parse("Stream()", lines)
 }
@@ -87,7 +87,7 @@ func (rs RiveScript) Stream(code string) {
 /*
 parse loads the RiveScript code into the bot's memory.
 */
-func (rs RiveScript) parse(path string, lines []string) {
+func (rs *RiveScript) parse(path string, lines []string) {
 	rs.say("Parsing code!")
 
 	// Get the "abstract syntax tree" of this file.
@@ -191,7 +191,7 @@ After you have finished loading your RiveScript code, call this method to
 populate the various sort buffers. This is absolutely necessary for reply
 matching to work efficiently!
 */
-func (rs RiveScript) SortReplies() {
+func (rs *RiveScript) SortReplies() {
 	// (Re)initialize the sort cache.
 	rs.sorted.topics = map[string][]sortedTriggerEntry{}
 	rs.sorted.thats = map[string][]sortedTriggerEntry{}

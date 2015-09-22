@@ -69,25 +69,25 @@ func New() *RiveScript {
 	return rs
 }
 
-func (rs RiveScript) Version() string {
+func (rs *RiveScript) Version() string {
 	// TODO: versioning
 	return "0.0.1"
 }
 
 // say prints a debugging message
-func (rs RiveScript) say(message string, a ...interface{}) {
+func (rs *RiveScript) say(message string, a ...interface{}) {
 	if rs.Debug {
 		fmt.Printf(message+"\n", a...)
 	}
 }
 
 // warn prints a warning message for non-fatal errors
-func (rs RiveScript) warn(message string, a ...interface{}) {
+func (rs *RiveScript) warn(message string, a ...interface{}) {
 	fmt.Printf("[WARN] "+message+"\n", a...)
 }
 
 // syntax is like warn but takes a filename and line number.
-func (rs RiveScript) warnSyntax(message string, filename string, lineno int, a ...interface{}) {
+func (rs *RiveScript) warnSyntax(message string, filename string, lineno int, a ...interface{}) {
 	message += fmt.Sprintf(" at %s line %d", filename, lineno)
 	rs.warn(message, a...)
 }

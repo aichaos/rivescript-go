@@ -5,10 +5,10 @@
 > object setvar javascript
 	// Example of how to get the current user's ID and set
 	// variables for them.
-	var uid = rs.currentUser();
-	var name  = args.shift();
-	var value = args.join(" ");
-	rs.setUservar(uid, name, value);
+	var uid = rs.CurrentUser();
+	var name  = args[0];
+	var value = args[1];
+	rs.SetUservar(uid, name, value);
 < object
 
 > object add javascript

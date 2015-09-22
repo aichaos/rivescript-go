@@ -18,7 +18,7 @@ Params:
 	username: The name of the user requesting a reply.
 	message: The user's message.
 */
-func (rs RiveScript) Reply(username string, message string) string {
+func (rs *RiveScript) Reply(username string, message string) string {
 	rs.say("Asked to reply to [%s] %s", username, message)
 
 	// Initialize a user profile for this user?
@@ -72,7 +72,7 @@ Params:
 	isBegin: Whether this reply is for the "BEGIN Block" context or not.
 	step: Recursion depth counter.
 */
-func (rs RiveScript) getReply(username string, message string, isBegin bool, step int) string {
+func (rs *RiveScript) getReply(username string, message string, isBegin bool, step int) string {
 	// Needed to sort replies?
 	if len(rs.sorted.topics) == 0 {
 		rs.warn("You forgot to call SortReplies()!")

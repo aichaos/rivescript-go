@@ -24,8 +24,20 @@ And in your RiveScript code, you can load and run JavaScript objects:
 		return parseInt(a) + parseInt(b);
 	< object
 
+	> object setname javascript
+		// Set the user's name via JavaScript
+		var uid = rs.CurrentUser();
+		rs.SetUservar(uid, args[0], args[1])
+	< object
+
 	+ add # and #
 	- <star1> + <star2> = <call>add <star1> <star2></call>
+
+	+ my name is *
+	- I will remember that.<call>setname <id> <formal></call>
+
+	+ what is my name
+	- You are <get name>.
 */
 package rivescript_js
 
@@ -33,18 +45,22 @@ import (
 	"fmt"
 	"strings"
 	"github.com/robertkrimen/otto"
+	rivescript "github.com/aichaos/rivescript-go"
 )
 
 type JavaScriptHandler struct {
 	vm *otto.Otto
+	bot *rivescript.RiveScript
 	functions map[string]string
 }
 
 // New creates an object handler for JavaScript with its own Otto VM.
-func New() *JavaScriptHandler {
+func New(rs *rivescript.RiveScript) *JavaScriptHandler {
 	js := new(JavaScriptHandler)
 	js.vm = otto.New()
+	js.bot = rs
 	js.functions = map[string]string{}
+
 	return js
 }
 
@@ -52,7 +68,7 @@ func New() *JavaScriptHandler {
 func (js JavaScriptHandler) Load(name string, code []string) {
 	// Create a unique function name called the same as the object macro name.
 	js.functions[name] = fmt.Sprintf(`
-		function object_%s(args) {
+		function object_%s(rs, args) {
 			%s
 		}
 	`, name, strings.Join(code, "\n"))
@@ -63,26 +79,29 @@ func (js JavaScriptHandler) Load(name string, code []string) {
 
 // Call executes a JavaScript macro and returns its results.
 func (js JavaScriptHandler) Call(name string, fields []string) string {
-	// Turn the array of arguments into a JavaScript list of quoted strings.
-	jsFields := ""
-	for _, field := range fields {
-		field = strings.Replace(field, `"`, `\"`, -1)
-		if len(jsFields) > 0 {
-			jsFields += ", "
-		}
-		jsFields += fmt.Sprintf(`"%s"`, field)
+	// Make the RiveScript object available to the JS.
+	v, err := js.vm.ToValue(js.bot)
+	if err != nil {
+		fmt.Printf("Error binding RiveScript object to Otto: %s", err)
+	}
+
+	// Convert the fields into a JavaScript object.
+	jsFields, err := js.vm.ToValue(fields)
+	if err != nil {
+		fmt.Printf("Error binding fields to Otto: %s", err)
 	}
 
 	// Run the JS function call and get the result.
-	js.vm.Run(fmt.Sprintf(`var result = object_%s([%s]);`, name, jsFields))
-
-	// Retrieve the result from the VM.
-	result, err := js.vm.Get("result")
+	result, err := js.vm.Call(fmt.Sprintf("object_%s", name), nil, v, jsFields)
 	if err != nil {
-		return fmt.Sprintf("[Error in JavaScript object: %s]", err)
+		fmt.Printf("Error: %s", err)
+	}
+
+	reply := ""
+	if result.IsDefined() {
+		reply, _ = result.ToString()
 	}
 
 	// Return it.
-	reply, _ := result.ToString()
 	return reply
 }
