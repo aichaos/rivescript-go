@@ -58,5 +58,32 @@ func ExampleRiveScript_javascript() {
 	bot.SortReplies()
 
 	reply := bot.Reply("local-user", "Add 5 and 7")
-	fmt.Printf("Bot: %s", reply)
+	fmt.Printf("Bot: %s\n", reply)
+}
+
+func ExampleRiveScript_subroutine() {
+	// Example for defining a Go function as an object macro.
+
+	bot := rivescript.New()
+
+	// Define an object macro named `setname`
+	bot.SetSubroutine("setname", func(rs *rivescript.RiveScript, args []string) string {
+		uid := rs.CurrentUser()
+		rs.SetUservar(uid, args[0], args[1])
+		return ""
+	})
+
+	// Stream in some RiveScript code.
+	bot.Stream(`
+		+ my name is *
+		- I will remember that.<call>setname <id> <formal></call>
+
+		+ what is my name
+		- You are <get name>.
+	`)
+	bot.SortReplies()
+
+	_ = bot.Reply("local-user", "my name is bob")
+	reply := bot.Reply("local-user", "What is my name?")
+	fmt.Printf("Bot: %s\n", reply)
 }

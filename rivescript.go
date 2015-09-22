@@ -7,7 +7,7 @@ import (
 
 // Constants
 const (
-	VERSION = "0.0.1"
+	VERSION            = "0.0.1"
 	RS_VERSION float64 = 2.0
 )
 
@@ -24,20 +24,21 @@ type RiveScript struct {
 	UnicodePunctuation *regexp.Regexp
 
 	// Internal data structures
-	global   map[string]string          // 'global' variables
-	var_     map[string]string          // 'var' bot variables
-	sub      map[string]string          // 'sub' substitutions
-	person   map[string]string          // 'person' substitutions
-	array    map[string][]string        // 'array'
-	users    map[string]*userData       // user variables
-	freeze   map[string]*userData       // frozen user variables
-	includes map[string]map[string]bool // included topics
-	inherits map[string]map[string]bool // inherited topics
-	objlangs map[string]string          // object macro languages
-	handlers map[string]MacroInterface  // object language handlers
-	topics   map[string]*astTopic       // main topic structure
-	thats    map[string]*thatTopic      // %Previous mapper
-	sorted   *sortBuffer                // Sorted data from SortReplies()
+	global      map[string]string          // 'global' variables
+	var_        map[string]string          // 'var' bot variables
+	sub         map[string]string          // 'sub' substitutions
+	person      map[string]string          // 'person' substitutions
+	array       map[string][]string        // 'array'
+	users       map[string]*userData       // user variables
+	freeze      map[string]*userData       // frozen user variables
+	includes    map[string]map[string]bool // included topics
+	inherits    map[string]map[string]bool // inherited topics
+	objlangs    map[string]string          // object macro languages
+	handlers    map[string]MacroInterface  // object language handlers
+	subroutines map[string]Subroutine      // Golang object handlers
+	topics      map[string]*astTopic       // main topic structure
+	thats       map[string]*thatTopic      // %Previous mapper
+	sorted      *sortBuffer                // Sorted data from SortReplies()
 
 	// State information.
 	currentUser string
@@ -63,6 +64,7 @@ func New() *RiveScript {
 	rs.inherits = map[string]map[string]bool{}
 	rs.objlangs = map[string]string{}
 	rs.handlers = map[string]MacroInterface{}
+	rs.subroutines = map[string]Subroutine{}
 	rs.topics = map[string]*astTopic{}
 	rs.thats = map[string]*thatTopic{}
 	rs.sorted = new(sortBuffer)

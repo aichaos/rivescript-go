@@ -21,7 +21,7 @@ func (rs *RiveScript) RemoveHandler(lang string) {
 }
 
 // Subroutine is a Golang function type for defining an object macro in Go.
-type Subroutine func() string
+type Subroutine func(*RiveScript, []string) string
 
 /*
 SetSubroutine defines a Go object macro from your program.
@@ -29,12 +29,17 @@ SetSubroutine defines a Go object macro from your program.
 Params:
 
 	name: The name of your subroutine for the `<call>` tag in RiveScript.
-	fn: A function with a prototype `func() string`
+	fn: A function with a prototype `func(*RiveScript, []string) string`
 */
+func (rs *RiveScript) SetSubroutine(name string, fn Subroutine) {
+	rs.subroutines[name] = fn
+}
 
-func (rs *RiveScript) SetSubroutine(name string, fn Subroutine) bool {
-	// TODO: implementation
-	return false
+/*
+DeleteSubroutine removes a Go object macro.
+*/
+func (rs *RiveScript) DeleteSubroutine(name string) {
+	delete(rs.subroutines, name)
 }
 
 /*

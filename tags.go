@@ -458,7 +458,10 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 
 		// Do we know this object?
 		var output string
-		if _, ok := rs.objlangs[obj]; ok {
+		if _, ok := rs.subroutines[obj]; ok {
+			// It exists as a native Go macro.
+			output = rs.subroutines[obj](rs, args)
+		} else if _, ok := rs.objlangs[obj]; ok {
 			lang := rs.objlangs[obj]
 			output = rs.handlers[lang].Call(obj, args)
 		} else {
