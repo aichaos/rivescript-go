@@ -14,6 +14,9 @@ func (rs RiveScript) SetHandler(lang string, handler MacroHandler) bool {
 	return false
 }
 
+// Subroutine is a Golang function type for defining an object macro in Go.
+type Subroutine func() string
+
 /*
 SetSubroutine defines a Go object macro from your program.
 
@@ -21,7 +24,6 @@ Params:
 - name: The name of your subroutine for the `<call>` tag in RiveScript.
 - fn: A function with a prototype `func() string`
 */
-type Subroutine func() string
 
 func (rs RiveScript) SetSubroutine(name string, fn Subroutine) bool {
 	// TODO: implementation
@@ -93,7 +95,7 @@ to delete a substitution.
 func (rs RiveScript) SetUservar(username string, name string, value string) {
 	// Initialize the user?
 	if _, ok := rs.users[username]; !ok {
-		rs.users[username] = NewUser()
+		rs.users[username] = newUser()
 	}
 
 	if value == "undefined" {
@@ -112,7 +114,7 @@ Equivalent to calling `SetUservar()` for each pair in the map.
 func (rs RiveScript) SetUservars(username string, data map[string]string) {
 	// Initialize the user?
 	if _, ok := rs.users[username]; !ok {
-		rs.users[username] = NewUser()
+		rs.users[username] = newUser()
 	}
 
 	for key, value := range data {
@@ -203,7 +205,7 @@ can be restored later with `ThawUservars()`.
 func (rs RiveScript) FreezeUservars(username string) error {
 	if _, ok := rs.users[username]; ok {
 		delete(rs.freeze, username) // Always start fresh
-		rs.freeze[username] = NewUser()
+		rs.freeze[username] = newUser()
 
 		for key, value := range rs.users[username].data {
 			rs.freeze[username].data[key] = value
@@ -239,7 +241,7 @@ func (rs RiveScript) ThawUservars(username string, action string) error {
 			delete(rs.freeze, username)
 		} else if action == "keep" {
 			delete(rs.users, username) // Always start fresh
-			rs.users[username] = NewUser()
+			rs.users[username] = newUser()
 
 			for key, value := range rs.freeze[username].data {
 				rs.users[username].data[key] = value

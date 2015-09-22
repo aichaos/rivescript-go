@@ -3,16 +3,16 @@ package rivescript
 // Miscellaneous structures
 
 // User data, key/value pairs about the user.
-type UserData struct {
+type userData struct {
 	data         map[string]string
 	lastMatch    string
 	inputHistory []string
 	replyHistory []string
 }
 
-// NewUser creates a new user profile.
-func NewUser() *UserData {
-	user := new(UserData)
+// newUser creates a new user profile.
+func newUser() *userData {
+	user := new(userData)
 	user.data = map[string]string{}
 	user.data["topic"] = "random"
 

@@ -29,8 +29,8 @@ type RiveScript struct {
 	sub      map[string]string          // 'sub' substitutions
 	person   map[string]string          // 'person' substitutions
 	array    map[string][]string        // 'array'
-	users    map[string]*UserData       // user variables
-	freeze   map[string]*UserData       // frozen user variables
+	users    map[string]*userData       // user variables
+	freeze   map[string]*userData       // frozen user variables
 	includes map[string]map[string]bool // included topics
 	inherits map[string]map[string]bool // inherited topics
 	objlangs map[string]string          // object macro languages
@@ -57,8 +57,8 @@ func New() *RiveScript {
 	rs.sub = map[string]string{}
 	rs.person = map[string]string{}
 	rs.array = map[string][]string{}
-	rs.users = map[string]*UserData{}
-	rs.freeze = map[string]*UserData{}
+	rs.users = map[string]*userData{}
+	rs.freeze = map[string]*userData{}
 	rs.includes = map[string]map[string]bool{}
 	rs.inherits = map[string]map[string]bool{}
 	rs.handlers = map[string]*MacroHandler{}
@@ -67,7 +67,7 @@ func New() *RiveScript {
 	rs.sorted = new(sortBuffer)
 
 	// Initialize Golang handler.
-	//rs.handlers["go"] = new(GolangHandler)
+	//rs.handlers["go"] = new(golangHandler)
 	return rs
 }
 

@@ -78,7 +78,7 @@ func (rs RiveScript) parse(path string, lines []string) {
 	rs.say("Parsing code!")
 
 	// Get the "abstract syntax tree" of this file.
-	ast := rs.ParseSource(path, lines)
+	ast := rs.parseSource(path, lines)
 
 	// Get all of the "begin" type variables
 	for k, v := range ast.begin.global {

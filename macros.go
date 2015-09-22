@@ -10,10 +10,10 @@ type MacroHandler interface {
 // A built-in object macro for Golang functions. Note that Go isn't a dynamic
 // language and it can't compile code dynamically, so this interface is purely
 // for the back-end SetSubroutine() method.
-type GolangHandler struct {
+type golangHandler struct {
 	functions map[string]*Subroutine
 }
 
-func (self GolangHandler) LoadFunction(name string, fn Subroutine) {
+func (self golangHandler) loadFunction(name string, fn Subroutine) {
 	// TODO: implementation
 }

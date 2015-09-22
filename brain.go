@@ -22,7 +22,7 @@ func (rs RiveScript) Reply(username string, message string) string {
 
 	// Initialize a user profile for this user?
 	if _, ok := rs.users[username]; !ok {
-		rs.users[username] = NewUser()
+		rs.users[username] = newUser()
 	}
 
 	// Store the current user's ID.
