@@ -1,6 +1,3 @@
-/*
-Package rivescript implements the RiveScript chatbot scripting language.
-*/
 package rivescript
 
 import (
