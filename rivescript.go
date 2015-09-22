@@ -31,7 +31,7 @@ type RiveScript struct {
 	includes map[string]map[string]bool // included topics
 	inherits map[string]map[string]bool // inherited topics
 	objlangs map[string]string          // object macro languages
-	handlers map[string]*MacroHandler   // object language handlers
+	handlers map[string]MacroInterface  // object language handlers
 	topics   map[string]*astTopic       // main topic structure
 	thats    map[string]*thatTopic      // %Previous mapper
 	sorted   *sortBuffer                // Sorted data from SortReplies()
@@ -58,7 +58,8 @@ func New() *RiveScript {
 	rs.freeze = map[string]*userData{}
 	rs.includes = map[string]map[string]bool{}
 	rs.inherits = map[string]map[string]bool{}
-	rs.handlers = map[string]*MacroHandler{}
+	rs.objlangs = map[string]string{}
+	rs.handlers = map[string]MacroInterface{}
 	rs.topics = map[string]*astTopic{}
 	rs.thats = map[string]*thatTopic{}
 	rs.sorted = new(sortBuffer)

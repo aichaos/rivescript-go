@@ -457,12 +457,16 @@ func (rs RiveScript) processTags(username string, message string, reply string, 
 		}
 
 		// Do we know this object?
-		// TODO: implement objects
-		_ = obj
-		_ = args
-		output := "[ERR: TODO]"
+		var output string
+		if _, ok := rs.objlangs[obj]; ok {
+			lang := rs.objlangs[obj]
+			output = rs.handlers[lang].Call(obj, args)
+		} else {
+			output = "[ERR: Object Not Found]"
+		}
 
 		reply = strings.Replace(reply, fmt.Sprintf("<call>%s</call>", match[1]), output, -1)
+		match = re_call.FindStringSubmatch(reply)
 	}
 
 	return reply

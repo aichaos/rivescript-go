@@ -58,7 +58,18 @@ func (rs RiveScript) LoadDirectory(path string, extensions ...string) {
 	}
 
 	for _, f := range files {
-		rs.LoadFile(f)
+		// Restrict file extensions.
+		validExtension := false
+		for _, exten := range extensions {
+			if strings.HasSuffix(f, exten) {
+				validExtension = true
+				break
+			}
+		}
+
+		if validExtension {
+			rs.LoadFile(f)
+		}
 	}
 }
 
@@ -159,6 +170,16 @@ func (rs RiveScript) parse(path string, lines []string) {
 				}
 				rs.thats[topic].triggers[trigger.trigger].previous[trigger.previous] = trigger
 			}
+		}
+	}
+
+	// Load all the parsed objects.
+	for _, object := range ast.objects {
+		// Have a language handler for this?
+		if _, ok := rs.handlers[object.language]; ok {
+			rs.say("Loading object macro %s (%s)", object.name, object.language)
+			rs.handlers[object.language].Load(object.name, object.code)
+			rs.objlangs[object.name] = object.language
 		}
 	}
 }

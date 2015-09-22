@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
 	"os"
 	"strings"
+	rivescript "github.com/aichaos/rivescript-go"
+	"github.com/aichaos/rivescript-go/lang/rivescript_js"
 )
 
 func main() {
@@ -29,6 +30,10 @@ func main() {
 	bot.Debug = *debug
 	bot.UTF8 = *utf8
 	bot.Depth = *depth
+
+	// JavaScript object macro handler.
+	jsHandler := rivescript_js.New()
+	bot.SetHandler("javascript", jsHandler)
 
 	// Load the target directory.
 	bot.LoadDirectory(root)

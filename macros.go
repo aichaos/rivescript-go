@@ -2,8 +2,8 @@ package rivescript
 
 // Interface for object macro handlers.
 
-type MacroHandler interface {
-	Load(name string, code string)
+type MacroInterface interface {
+	Load(name string, code []string)
 	Call(name string, fields []string) string
 }
 

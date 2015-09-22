@@ -9,9 +9,15 @@ import (
 /*
 SetHandler sets a custom language handler for RiveScript object macros.
 */
-func (rs RiveScript) SetHandler(lang string, handler MacroHandler) bool {
-	// TODO: implementation
-	return false
+func (rs RiveScript) SetHandler(lang string, handler MacroInterface) {
+	rs.handlers[lang] = handler
+}
+
+/*
+DeleteHandler removes an object macro language handler.
+*/
+func (rs RiveScript) RemoveHandler(lang string) {
+	delete(rs.handlers, lang)
 }
 
 // Subroutine is a Golang function type for defining an object macro in Go.

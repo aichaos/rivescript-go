@@ -59,10 +59,10 @@ func (rs RiveScript) parseSource(filename string, code []string) *astRoot {
 					newObject.language = objLang
 					newObject.code = objBuf
 					ast.objects = append(ast.objects, newObject)
-				} else {
-					objBuf = append(objBuf, line)
 				}
 				inobj = false
+			} else {
+				objBuf = append(objBuf, line)
 			}
 			continue
 		}
