@@ -24,7 +24,7 @@ Rough estimation of the current progress on RiveScript-Go:
   - [x] Response tag processing
   - [x] Handling the BEGIN block
 - [x] Sanity check the code by making sure everything in `testsuite.rive` works as expected
-- [ ] Write all the miscellaneous config functions such as `SetUservar()`
+- [x] Write all the miscellaneous config functions such as `SetUservar()`
 - [ ] Make a standalone "shell" program for quickly testing the bot
 - [ ] Unit tests to make sure it has feature parity with other implementations
 
