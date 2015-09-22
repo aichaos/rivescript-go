@@ -63,7 +63,7 @@ func stringFormat(format string, text string) string {
 		result := []string{}
 		for _, word := range words {
 			if len(word) > 1 {
-				result = append(result, strings.ToUpper(word[0:1]) + strings.ToLower(word[1:]))
+				result = append(result, strings.ToUpper(word[0:1])+strings.ToLower(word[1:]))
 			} else {
 				result = append(result, strings.ToUpper(word))
 			}

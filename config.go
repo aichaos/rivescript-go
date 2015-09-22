@@ -14,7 +14,6 @@ func (rs RiveScript) SetHandler(lang string, handler MacroHandler) bool {
 	return false
 }
 
-
 /*
 SetSubroutine defines a Go object macro from your program.
 
@@ -23,6 +22,7 @@ Params:
 - fn: A function with a prototype `func() string`
 */
 type Subroutine func() string
+
 func (rs RiveScript) SetSubroutine(name string, fn Subroutine) bool {
 	// TODO: implementation
 	return false

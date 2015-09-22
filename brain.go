@@ -50,9 +50,9 @@ func (rs RiveScript) Reply(username string, message string) string {
 
 	// Save their message history.
 	user := rs.users[username]
-	user.inputHistory = user.inputHistory[:len(user.inputHistory)-1]    // Pop
+	user.inputHistory = user.inputHistory[:len(user.inputHistory)-1]                       // Pop
 	user.inputHistory = append([]string{strings.TrimSpace(message)}, user.inputHistory...) // Unshift
-	user.replyHistory = user.replyHistory[:len(user.replyHistory)-1]    // Pop
+	user.replyHistory = user.replyHistory[:len(user.replyHistory)-1]                       // Pop
 	user.replyHistory = append([]string{strings.TrimSpace(reply)}, user.replyHistory...)   // Unshift
 
 	// Unset the current user's ID.
@@ -329,7 +329,7 @@ func (rs RiveScript) getReply(username string, message string, isBegin bool, ste
 				weight := 1
 				match := re_weight.FindStringSubmatch(rep)
 				if len(match) > 0 {
-					weight , _ = strconv.Atoi(match[1])
+					weight, _ = strconv.Atoi(match[1])
 					if weight <= 0 {
 						rs.warn("Can't have a weight <= 0!")
 						weight = 1

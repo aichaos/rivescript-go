@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	rivescript "github.com/aichaos/rivescript-go"
 	"os"
 	"strings"
-	rivescript "github.com/aichaos/rivescript-go"
 )
 
 func main() {

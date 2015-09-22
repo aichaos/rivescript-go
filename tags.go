@@ -46,7 +46,7 @@ func (rs RiveScript) triggerRegexp(username string, pattern string) string {
 	pattern = strings.Replace(pattern, "*", `(.+?)`, -1)
 	pattern = strings.Replace(pattern, "#", `(\d+?)`, -1)
 	pattern = strings.Replace(pattern, "_", `(\w+?)`, -1)
-	pattern = re_weight.ReplaceAllString(pattern, "") // Remove {weight} tags
+	pattern = re_weight.ReplaceAllString(pattern, "")   // Remove {weight} tags
 	pattern = re_inherits.ReplaceAllString(pattern, "") // Remove {inherits} tags
 	pattern = strings.Replace(pattern, "<zerowidthstar>", `(.*?)`, -1)
 

@@ -17,10 +17,10 @@ const RS_VERSION float64 = 2.0
 
 type RiveScript struct {
 	// Parameters
-	Debug  bool // Debug mode
-	Strict bool // Strictly enforce RiveScript syntax
-	Depth  int  // Max depth for recursion
-	UTF8   bool // Support UTF-8 RiveScript code
+	Debug              bool // Debug mode
+	Strict             bool // Strictly enforce RiveScript syntax
+	Depth              int  // Max depth for recursion
+	UTF8               bool // Support UTF-8 RiveScript code
 	UnicodePunctuation *regexp.Regexp
 
 	// Internal data structures
@@ -34,7 +34,7 @@ type RiveScript struct {
 	includes map[string]map[string]bool // included topics
 	inherits map[string]map[string]bool // inherited topics
 	objlangs map[string]string          // object macro languages
-	handlers map[string]*MacroHandler  // object language handlers
+	handlers map[string]*MacroHandler   // object language handlers
 	topics   map[string]*astTopic       // main topic structure
 	thats    map[string]*thatTopic      // %Previous mapper
 	sorted   *sortBuffer                // Sorted data from SortReplies()

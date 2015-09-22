@@ -4,8 +4,8 @@ package rivescript
 
 // User data, key/value pairs about the user.
 type UserData struct {
-	data map[string]string
-	lastMatch string
+	data         map[string]string
+	lastMatch    string
 	inputHistory []string
 	replyHistory []string
 }
