@@ -1,12 +1,13 @@
 package rivescript
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-func (rs *RiveScript) parseSource(filename string, code []string) *astRoot {
+func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, error) {
 	rs.say("In parse!")
 
 	// Eventual return structure
@@ -194,8 +195,9 @@ func (rs *RiveScript) parseSource(filename string, code []string) *astRoot {
 			if type_ == "version" {
 				parsedVersion, _ := strconv.ParseFloat(value, 32)
 				if parsedVersion > RS_VERSION {
-					rs.warnSyntax("Unsupported RiveScript version. We only support %f", filename, lineno, RS_VERSION)
-					return nil
+					return nil, errors.New(
+						fmt.Sprintf("Unsupported RiveScript version. We only support %f at %s line %d", RS_VERSION, filename, lineno),
+					)
 				}
 				continue
 			}
@@ -375,5 +377,5 @@ func (rs *RiveScript) parseSource(filename string, code []string) *astRoot {
 		}
 	}
 
-	return ast
+	return ast, nil
 }

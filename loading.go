@@ -4,6 +4,7 @@ package rivescript
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,13 +18,12 @@ Params:
 
 	path: File path to
 */
-func (rs *RiveScript) LoadFile(path string) {
+func (rs *RiveScript) LoadFile(path string) error {
 	rs.say("Load RiveScript file: %s", path)
 
 	fh, err := os.Open(path)
 	if err != nil {
-		rs.warn("Failed to open file %s: %s", path, err)
-		return
+		return errors.New(fmt.Sprintf("Failed to open file %s: %s", path, err))
 	}
 
 	defer fh.Close()
@@ -35,7 +35,7 @@ func (rs *RiveScript) LoadFile(path string) {
 		lines = append(lines, scanner.Text())
 	}
 
-	rs.parse(path, lines)
+	return rs.parse(path, lines)
 }
 
 /*
@@ -46,15 +46,14 @@ Params:
 	path: Path to the directory on disk
 	extensions...: List of file extensions to filter on, default is '.rive' and '.rs'
 */
-func (rs *RiveScript) LoadDirectory(path string, extensions ...string) {
+func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 	if len(extensions) == 0 {
 		extensions = []string{".rive", ".rs"}
 	}
 
 	files, err := filepath.Glob(fmt.Sprintf("%s/*", path))
 	if err != nil {
-		rs.warn("Failed to open folder %s: %s", path, err)
-		return
+		return errors.New(fmt.Sprintf("Failed to open folder %s: %s", path, err))
 	}
 
 	for _, f := range files {
@@ -68,9 +67,14 @@ func (rs *RiveScript) LoadDirectory(path string, extensions ...string) {
 		}
 
 		if validExtension {
-			rs.LoadFile(f)
+			err := rs.LoadFile(f)
+			if err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
 }
 
 /*
@@ -79,19 +83,22 @@ Stream loads RiveScript code from a text buffer.
 Params:
 	code: Raw source code of a RiveScript document, with line breaks after each line.
 */
-func (rs *RiveScript) Stream(code string) {
+func (rs *RiveScript) Stream(code string) error {
 	lines := strings.Split(code, "\n")
-	rs.parse("Stream()", lines)
+	return rs.parse("Stream()", lines)
 }
 
 /*
 parse loads the RiveScript code into the bot's memory.
 */
-func (rs *RiveScript) parse(path string, lines []string) {
+func (rs *RiveScript) parse(path string, lines []string) error {
 	rs.say("Parsing code!")
 
 	// Get the "abstract syntax tree" of this file.
-	ast := rs.parseSource(path, lines)
+	ast, err := rs.parseSource(path, lines)
+	if err != nil {
+		return err
+	}
 
 	// Get all of the "begin" type variables
 	for k, v := range ast.begin.global {
@@ -182,6 +189,8 @@ func (rs *RiveScript) parse(path string, lines []string) {
 			rs.objlangs[object.name] = object.language
 		}
 	}
+
+	return nil
 }
 
 /*

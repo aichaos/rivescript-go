@@ -53,10 +53,16 @@ func main() {
     bot := rivescript.New()
 
     // Load a directory full of RiveScript documents (.rive files)
-    bot.LoadDirectory("eg/brain")
+    err := bot.LoadDirectory("eg/brain")
+    if err != nil {
+      fmt.Printf("Error loading from directory: %s", err)
+    }
 
     // Load an individual file.
-    bot.LoadFile("brain/testsuite.rive")
+    err = bot.LoadFile("brain/testsuite.rive")
+    if err != nil {
+      fmt.Printf("Error loading from file: %s", err)
+    }
 
     // Sort the replies after loading them!
     bot.SortReplies()

@@ -52,7 +52,12 @@ func main() {
 	bot.SetHandler("javascript", jsHandler)
 
 	// Load the target directory.
-	bot.LoadDirectory(root)
+	err := bot.LoadDirectory(root)
+	if err != nil {
+		fmt.Printf("Error loading directory: %s", err)
+		os.Exit(1)
+	}
+
 	bot.SortReplies()
 
 	fmt.Printf(`RiveScript Interpreter (Golang) -- Interactive Mode
