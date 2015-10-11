@@ -206,7 +206,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 		for _, trig := range rs.sorted.topics[topic] {
 			pattern := trig.trigger
 			regexp := rs.triggerRegexp(username, pattern)
-			rs.say("Try to match \"%s\" against %s", message, pattern)
+			rs.say("Try to match \"%s\" against %s (%s)", message, pattern, regexp)
 
 			// If the trigger is atomic, we don't need to bother with the regexp engine.
 			isMatch := false

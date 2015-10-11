@@ -198,6 +198,12 @@ func TestAlternativesAndOptionals(t *testing.T) {
 
 		+ [please|can you] ask me a question
 		- Why is the sky blue?
+
+		+ (aa|bb|cc) [bogus]
+		- Matched.
+
+		+ (yo|hi) [computer|bot] *
+		- Matched.
 	`)
 	bot.reply("What are you?", "I am a robot.")
 	bot.reply("What is you?", "I am a robot.")
@@ -210,6 +216,19 @@ func TestAlternativesAndOptionals(t *testing.T) {
 	bot.reply("Can you ask me a question?", "Why is the sky blue?")
 	bot.reply("Please ask me a question?", "Why is the sky blue?")
 	bot.reply("Ask me a question.", "Why is the sky blue?")
+
+	bot.reply("aa", "Matched.")
+	bot.reply("bb", "Matched.")
+	bot.reply("aa bogus", "Matched.")
+	bot.reply("aabogus", "ERR: No Reply Matched")
+	bot.reply("bogus", "ERR: No Reply Matched")
+
+	bot.reply("hi Aiden", "Matched.")
+	bot.reply("hi bot how are you?", "Matched.")
+	bot.reply("yo computer what time is it?", "Matched.")
+	bot.reply("yoghurt is yummy", "ERR: No Reply Matched")
+	bot.reply("hide and seek is fun", "ERR: No Reply Matched")
+	bot.reply("hip hip hurrah", "ERR: No Reply Matched")
 }
 
 func TestTriggerArrays(t *testing.T) {

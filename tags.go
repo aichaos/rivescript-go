@@ -69,9 +69,8 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 		parts := strings.Split(match[1], "|")
 		opts := []string{}
 		for _, p := range parts {
-			opts = append(opts, fmt.Sprintf(`\s*%s\s*`, p))
+			opts = append(opts, fmt.Sprintf(`(?:\s|\b)+%s(?:\s|\b)+`, p))
 		}
-		opts = append(opts, `\s*`)
 
 		// If this optional had a star or anything in it, make it non-matching.
 		pipes := strings.Join(opts, "|")
@@ -79,7 +78,9 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 		pipes = strings.Replace(pipes, `(\d+?)`, `(?:\d+?)`, -1)
 		pipes = strings.Replace(pipes, `(\d+?)`, `(?:\w+?)`, -1)
 
-		pattern = regReplace(pattern, fmt.Sprintf(`\s*\[%s\]\s*`, quotemeta(match[1])), fmt.Sprintf("(?:%s)", pipes))
+		pattern = regReplace(pattern,
+			fmt.Sprintf(`\s*\[%s\]\s*`, quotemeta(match[1])),
+			fmt.Sprintf(`(?:%s|(?:\s|\b)+)`, pipes))
 		match = re_optional.FindStringSubmatch(pattern)
 	}
 
