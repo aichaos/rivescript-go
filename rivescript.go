@@ -78,6 +78,32 @@ func (rs *RiveScript) Version() string {
 	return VERSION
 }
 
+// SetDebug sets the value of rs.Debug (maybe useful for non-Go bindings)
+func (rs *RiveScript) SetDebug(value bool) {
+	rs.Debug = value
+}
+
+// SetUTF8 sets the value of rs.UTF8 (maybe useful for non-Go bindings)
+func (rs *RiveScript) SetUTF8(value bool) {
+	rs.UTF8 = value
+}
+
+// SetStrict sets the value of rs.Strict (maybe useful for non-Go bindings)
+func (rs *RiveScript) SetStrict(value bool) {
+	rs.Strict = value
+}
+
+// SetDepth sets the value of rs.Depth (maybe useful for non-Go bindings)
+func (rs *RiveScript) SetDepth(value int) {
+	rs.Depth = value
+}
+
+// SetUnicodePunctuation sets the value of rs.UnicodePunctuation (maybe useful
+// for non-Go bindings)
+func (rs *RiveScript) SetUnicodePunctuation(value string) {
+	rs.UnicodePunctuation = regexp.MustCompile(value)
+}
+
 // say prints a debugging message
 func (rs *RiveScript) say(message string, a ...interface{}) {
 	if rs.Debug {
