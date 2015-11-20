@@ -37,7 +37,7 @@ func isAtomic(pattern string) bool {
 	// Atomic triggers don't contain any wildcards or parenthesis or anything of
 	// the sort. We don't need to test the full character set, just left brackets
 	// will do.
-	specials := []string{"*", "#", "_", "(", "[", "<"}
+	specials := []string{"*", "#", "_", "(", "[", "<", "@"}
 	for _, special := range specials {
 		if strings.Index(pattern, special) > -1 {
 			return false
