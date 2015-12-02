@@ -160,8 +160,8 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 		for i := 1; i <= 9; i++ {
 			inputPattern := fmt.Sprintf("<input%d>", i)
 			replyPattern := fmt.Sprintf("<reply%d>", i)
-			pattern = strings.Replace(pattern, inputPattern, rs.users[username].inputHistory[i], -1)
-			pattern = strings.Replace(pattern, replyPattern, rs.users[username].replyHistory[i], -1)
+			pattern = strings.Replace(pattern, inputPattern, rs.users[username].inputHistory[i-1], -1)
+			pattern = strings.Replace(pattern, replyPattern, rs.users[username].replyHistory[i-1], -1)
 		}
 	}
 
