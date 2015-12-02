@@ -114,54 +114,56 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 		rs.say("Cmd: %s; line: %s", cmd, line)
 
 		// Do a look-ahead for ^Continue and %Previous commands.
-		for li, lookahead := range code[lp+1:] {
-			lookahead = strings.TrimSpace(lookahead)
-			if len(lookahead) < 2 {
-				continue
-			}
-			lookCmd := string(lookahead[0])
-			lookahead = strings.TrimSpace(lookahead[1:])
+		if cmd != "^" {
+			for li, lookahead := range code[lp+1:] {
+				lookahead = strings.TrimSpace(lookahead)
+				if len(lookahead) < 2 {
+					continue
+				}
+				lookCmd := string(lookahead[0])
+				lookahead = strings.TrimSpace(lookahead[1:])
 
-			// We only care about a couple lookahead command types.
-			if lookCmd != "%" && lookCmd != "^" {
-				break
-			}
-
-			// Only continue if the lookahead has any data
-			if len(lookahead) == 0 {
-				break
-			}
-
-			rs.say("\tLookahead %d: %s %s", li, lookCmd, lookahead)
-
-			// If the current command is a +, see if the following is a %
-			if cmd == "+" {
-				if lookCmd == "%" {
-					isThat = lookahead
+				// We only care about a couple lookahead command types.
+				if lookCmd != "%" && lookCmd != "^" {
 					break
-				} else {
-					isThat = ""
 				}
-			}
 
-			// If the current command is a ! and the next command(s) are ^,
-			// we'll tack each extension on as a line break (which is useful
-			// information for arrays).
-			if cmd == "!" {
-				if lookCmd == "^" {
-					line += fmt.Sprintf("<crlf>%s", lookahead)
+				// Only continue if the lookahead has any data
+				if len(lookahead) == 0 {
+					break
 				}
-				continue
-			}
 
-			// If the current command is not a ^, and the line after is not a %,
-			// but the line after IS a ^, then tack it on to the end of the
-			// current line.
-			if cmd != "^" && lookCmd != "%" {
-				if lookCmd == "^" {
-					// Which character to concatenate with?
-					// TODO: if concatModes[blah] isnt undefined
-					line += concatModes[localOptions["concat"]] + lookahead
+				rs.say("\tLookahead %d: %s %s", li, lookCmd, lookahead)
+
+				// If the current command is a +, see if the following is a %
+				if cmd == "+" {
+					if lookCmd == "%" {
+						isThat = lookahead
+						break
+					} else {
+						isThat = ""
+					}
+				}
+
+				// If the current command is a ! and the next command(s) are ^,
+				// we'll tack each extension on as a line break (which is useful
+				// information for arrays).
+				if cmd == "!" {
+					if lookCmd == "^" {
+						line += fmt.Sprintf("<crlf>%s", lookahead)
+					}
+					continue
+				}
+
+				// If the current command is not a ^, and the line after is not a %,
+				// but the line after IS a ^, then tack it on to the end of the
+				// current line.
+				if cmd != "^" && lookCmd != "%" {
+					if lookCmd == "^" {
+						// Which character to concatenate with?
+						// TODO: if concatModes[blah] isnt undefined
+						line += concatModes[localOptions["concat"]] + lookahead
+					}
 				}
 			}
 		}
