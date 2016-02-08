@@ -1,5 +1,7 @@
 # RiveScript-Go
 
+[![Build Status](https://travis-ci.org/aichaos/rivescript-go.svg?branch=master)](https://travis-ci.org/aichaos/rivescript-go)
+
 ## Introduction
 
 This is a RiveScript interpreter library written for the Go programming
