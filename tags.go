@@ -53,7 +53,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 	// UTF-8 mode special characters.
 	if rs.UTF8 {
 		// Literal @ symbols (like in an e-mail address) conflict with arrays.
-		pattern = strings.Replace(pattern, "@", `\u0040`, -1)
+		pattern = strings.Replace(pattern, `\@`, `\u0040`, -1)
 	}
 
 	// Optionals.
