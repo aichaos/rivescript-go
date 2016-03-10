@@ -430,9 +430,9 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 			break
 		}
 
-		target := strings.TrimSpace(match[1])
+		target := match[1]
 		rs.say("Inline redirection to: %s", target)
-		subreply := rs.getReply(username, target, false, step+1)
+		subreply := rs.getReply(username, strings.TrimSpace(target), false, step+1)
 		reply = strings.Replace(reply, fmt.Sprintf("{@%s}", target), subreply, -1)
 		match = re_redirect.FindStringSubmatch(reply)
 	}

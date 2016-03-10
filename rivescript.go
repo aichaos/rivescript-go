@@ -7,7 +7,7 @@ import (
 
 // Constants
 const (
-	VERSION            = "0.0.1"
+	VERSION            = "0.0.2"
 	RS_VERSION float64 = 2.0
 )
 
