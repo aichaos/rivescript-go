@@ -28,11 +28,17 @@ import (
 
 func main() {
 	// Collect command line arguments.
+	version := flag.Bool("version", false, "Show the version number and exit.")
 	debug := flag.Bool("debug", false, "Enable debug mode.")
 	utf8 := flag.Bool("utf8", false, "Enable UTF-8 mode.")
 	depth := flag.Int("depth", 50, "Recursion depth limit (default 50)")
 	flag.Parse()
 	args := flag.Args()
+
+	if *version == true {
+		fmt.Printf("RiveScript-Go version %s\n", rivescript.VERSION)
+		os.Exit(0)
+	}
 
 	if len(args) == 0 {
 		fmt.Fprintln(os.Stderr, "Usage: rivescript [options] </path/to/documents>")

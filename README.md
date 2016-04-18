@@ -108,12 +108,77 @@ The `<star>` tags in RiveScript will capture the user's "raw" input, so you can
 write replies to get the user's e-mail address or store foreign characters in
 their name.
 
+## Building
+
+I use a GNU Makefile to make building and running this module easier. The
+relevant commands are:
+
+* `make setup` - run this after freshly cloning this repo. It runs the
+  `git submodule` commands to pull down vendored dependencies.
+* `make build` - this will build the front-end command from `cmd/rivescript`
+  and place its binary into the `bin/` directory. It builds a binary relevant
+  to your current system, so on Linux this will create a Linux binary.
+  It's also recommended to run this one at least once, because it will cache
+  dependency packages and speed up subsequent builds and runs.
+* `make build.win32` - cross compile for Windows, but see below.
+* `make run` - this simply runs the front-end command and points it to the
+  `eg/brain` folder as its RiveScript source.
+* `make dist` - creates a binary distribution (see [Distributiong](#distributing)
+  below).
+* `make dist.win32` - cross compiles a binary distribution for Windows,
+  equivalent to `build.win32`
+* `make clean` - cleans up the `.gopath`, `bin` and `dist` directories.
+
+### Cross-compile for Windows
+
+If you're using Go v1.5 or higher, and aren't running Windows, you can build
+the `rivescript.exe` file using the cross compilation feature.
+
+If you're using Go as provided by your distribution's package maintainers, you
+need to mess with some path permissions for the Win32 build to work. This is
+because Go has to build the entire standard library for the foreign system
+(for more information, see [this blog post](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5)
+on the topic).
+
+Run `mkdir /usr/lib/golang/pkg/windows_386` and `chown` it as your user account.
+
+Then run `make build.win32` to cross compile the Win32 binary and output it to
+`bin/rivescript.exe`
+
+You should sanity test that the binary actually runs from a Windows environment.
+It might not run properly via Wine.
+
+## Distributing
+
+The GNU Makefile can build distributable binary forms of the RiveScript command
+for the host OS (usually Linux) and cross-compile for Windows. Building for Mac
+OS X, and building from within a Windows dev environment have not yet been
+tested.
+
+* `make dist` - build a distributable for your current system (usually Linux,
+  but Mac would probably work too).
+* `make dist.win32` - build a distributable for Windows using cross compilation.
+
+The `dist` commands will create a directory named `dist/rivescript` which you
+can inspect afterwards, and creates a zip file (Windows) or a `tar.gz` (Linux
+and Mac) with the contents of that folder, with names like
+`rivescript-0.0.2-win32.zip` and `rivescript-0.0.2-Linux.tar.gz` in the current
+directory (the root of the Git repo).
+
+The distributable directory contains only the following types of files:
+
+* The executable binary (`rivescript.exe` for Windows or `rivescript` otherwise)
+* Metadata files: `README.md`, `LICENSE`, etc.
+* Example brain at `eg/brain`
+* (Windows only) a super simple batch file for launching `rivescript.exe` and
+  pointing it to the example brain: `example.bat`
+
 ## License
 
 ```
 The MIT License (MIT)
 
-Copyright (c) 2015 Noah Petherbridge
+Copyright (c) 2016 Noah Petherbridge
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
