@@ -34,7 +34,7 @@ dist: build dist.common
 
 # `make dist.win32` to cross compile and distribute for Windows.
 dist.win32: build.win32 dist.common
-	echo -e "@echo off\nrivescript eg/brain" > dist/example.bat
+	echo -e "@echo off\nrivescript eg/brain" > dist/rivescript/example.bat
 	cp bin/rivescript.exe dist/rivescript/
 	cd dist; zip -r ../rivescript-$(VERSION)-win32.zip rivescript
 
