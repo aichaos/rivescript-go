@@ -15,7 +15,11 @@ run: gopath
 
 # `make fmt` to run gofmt
 fmt:
-	gofmt -w ./..
+	gofmt -w .
+
+# `make test` to run unit tests
+test: gopath
+	GOPATH=$(GOPATH) GO15VENDOREXPERIMENT=1 go test
 
 # `make build` to build the binary
 build: gopath

@@ -43,14 +43,14 @@ package rivescript_js
 
 import (
 	"fmt"
-	"strings"
-	"github.com/robertkrimen/otto"
 	rivescript "github.com/aichaos/rivescript-go"
+	"github.com/robertkrimen/otto"
+	"strings"
 )
 
 type JavaScriptHandler struct {
-	vm *otto.Otto
-	bot *rivescript.RiveScript
+	vm        *otto.Otto
+	bot       *rivescript.RiveScript
 	functions map[string]string
 }
 

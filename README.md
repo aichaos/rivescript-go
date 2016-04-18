@@ -127,6 +127,8 @@ relevant commands are:
   below).
 * `make dist.win32` - cross compiles a binary distribution for Windows,
   equivalent to `build.win32`
+* `make fmt` - runs `gofmt` on all the source code.
+* `make test` - runs `go test`
 * `make clean` - cleans up the `.gopath`, `bin` and `dist` directories.
 
 ### Cross-compile for Windows

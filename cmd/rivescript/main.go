@@ -20,10 +20,10 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"os"
-	"strings"
 	rivescript "github.com/aichaos/rivescript-go"
 	"github.com/aichaos/rivescript-go/lang/rivescript_js"
+	"os"
+	"strings"
 )
 
 func main() {
