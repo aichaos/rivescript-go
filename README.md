@@ -101,7 +101,7 @@ bot.UTF8 = true
 
 // Override the punctuation characters that get stripped from the
 // user's message.
-bot.UnicodePunctuation = regexp.MustCompile(`[.,!?;:]`);
+bot.UnicodePunctuation = regexp.MustCompile(`[.,!?;:]`)
 ```
 
 The `<star>` tags in RiveScript will capture the user's "raw" input, so you can
