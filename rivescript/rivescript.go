@@ -1,19 +1,26 @@
+/*
+Package rivescript contains all of the private use functions of RiveScript.
+
+You should not use any exported symbols from this package directly. They are
+not stable and are subject to change at any time without notice.
+
+As an end user of the RiveScript library you should stick purely to the exported
+API functions of the base RiveScript package and any other subpackages
+(for example: parser and ast) but leave the src package alone!
+
+You've been warned. Here be dragons.
+*/
 package rivescript
 
 import (
-	"fmt"
 	"regexp"
+	"github.com/aichaos/rivescript-go/macro"
 	"github.com/aichaos/rivescript-go/parser"
 )
 
-// Constants
 const (
-	VERSION            = "0.0.2"
+	VERSION string = "0.0.3"
 )
-
-/******************************************************************************
- * Constructor and Debug Methods                                              *
- ******************************************************************************/
 
 type RiveScript struct {
 	// Parameters
@@ -37,7 +44,7 @@ type RiveScript struct {
 	includes    map[string]map[string]bool // included topics
 	inherits    map[string]map[string]bool // inherited topics
 	objlangs    map[string]string          // object macro languages
-	handlers    map[string]MacroInterface  // object language handlers
+	handlers    map[string]macro.MacroInterface  // object language handlers
 	subroutines map[string]Subroutine      // Golang object handlers
 	topics      map[string]*astTopic       // main topic structure
 	thats       map[string]*thatTopic      // %Previous mapper
@@ -46,6 +53,10 @@ type RiveScript struct {
 	// State information.
 	currentUser string
 }
+
+/******************************************************************************
+ * Constructor and Debug Methods                                              *
+ ******************************************************************************/
 
 func New() *RiveScript {
 	rs := new(RiveScript)
@@ -74,7 +85,7 @@ func New() *RiveScript {
 	rs.includes = map[string]map[string]bool{}
 	rs.inherits = map[string]map[string]bool{}
 	rs.objlangs = map[string]string{}
-	rs.handlers = map[string]MacroInterface{}
+	rs.handlers = map[string]macro.MacroInterface{}
 	rs.subroutines = map[string]Subroutine{}
 	rs.topics = map[string]*astTopic{}
 	rs.thats = map[string]*thatTopic{}
@@ -113,22 +124,4 @@ func (rs *RiveScript) SetDepth(value int) {
 // for non-Go bindings)
 func (rs *RiveScript) SetUnicodePunctuation(value string) {
 	rs.UnicodePunctuation = regexp.MustCompile(value)
-}
-
-// say prints a debugging message
-func (rs *RiveScript) say(message string, a ...interface{}) {
-	if rs.Debug {
-		fmt.Printf(message+"\n", a...)
-	}
-}
-
-// warn prints a warning message for non-fatal errors
-func (rs *RiveScript) warn(message string, a ...interface{}) {
-	fmt.Printf("[WARN] "+message+"\n", a...)
-}
-
-// syntax is like warn but takes a filename and line number.
-func (rs *RiveScript) warnSyntax(message string, filename string, lineno int, a ...interface{}) {
-	message += fmt.Sprintf(" at %s line %d", filename, lineno)
-	rs.warn(message, a...)
 }

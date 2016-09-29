@@ -43,7 +43,7 @@ package rivescript_js
 
 import (
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
+	"github.com/aichaos/rivescript-go/rivescript"
 	"github.com/robertkrimen/otto"
 	"strings"
 )

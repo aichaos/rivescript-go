@@ -2,6 +2,10 @@ package rivescript
 
 // Miscellaneous structures
 
+// Subroutine is a Golang function type for defining an object macro in Go.
+// TODO: get this exportable to third party devs somehow
+type Subroutine func(*RiveScript, []string) string
+
 // User data, key/value pairs about the user.
 type userData struct {
 	data         map[string]string

@@ -6,6 +6,24 @@ import (
 	"fmt"
 )
 
+// say prints a debugging message
+func (rs *RiveScript) say(message string, a ...interface{}) {
+	if rs.Debug {
+		fmt.Printf(message+"\n", a...)
+	}
+}
+
+// warn prints a warning message for non-fatal errors
+func (rs *RiveScript) warn(message string, a ...interface{}) {
+	fmt.Printf("[WARN] "+message+"\n", a...)
+}
+
+// syntax is like warn but takes a filename and line number.
+func (rs *RiveScript) warnSyntax(message string, filename string, lineno int, a ...interface{}) {
+	message += fmt.Sprintf(" at %s line %d", filename, lineno)
+	rs.warn(message, a...)
+}
+
 // DumpTopics is a debug method which dumps the topic structure from the bot's memory.
 func (rs *RiveScript) DumpTopics() {
 	for topic, data := range rs.topics {

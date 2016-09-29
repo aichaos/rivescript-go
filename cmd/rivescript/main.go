@@ -20,7 +20,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
+	"github.com/aichaos/rivescript-go/rivescript"
 	"github.com/aichaos/rivescript-go/lang/rivescript_js"
 	"os"
 	"strings"

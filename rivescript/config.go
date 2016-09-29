@@ -4,12 +4,13 @@ package rivescript
 
 import (
 	"errors"
+	"github.com/aichaos/rivescript-go/macro"
 )
 
 /*
 SetHandler sets a custom language handler for RiveScript object macros.
 */
-func (rs *RiveScript) SetHandler(lang string, handler MacroInterface) {
+func (rs *RiveScript) SetHandler(lang string, handler macro.MacroInterface) {
 	rs.handlers[lang] = handler
 }
 
@@ -19,9 +20,6 @@ DeleteHandler removes an object macro language handler.
 func (rs *RiveScript) RemoveHandler(lang string) {
 	delete(rs.handlers, lang)
 }
-
-// Subroutine is a Golang function type for defining an object macro in Go.
-type Subroutine func(*RiveScript, []string) string
 
 /*
 SetSubroutine defines a Go object macro from your program.

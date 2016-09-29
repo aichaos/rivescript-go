@@ -2,7 +2,7 @@ package rivescript_test
 
 import (
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
+	rivescript "github.com/aichaos/rivescript-go/rivescript"
 	"testing"
 )
 
