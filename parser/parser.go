@@ -1,29 +1,106 @@
-package rivescript
+/*
+Package parser is a RiveScript language parser.
+
+This package can be used as a stand-alone parser for third party developers
+to use, if you want to be able to simply parse (and syntax check!)
+RiveScript source code and get an "abstract syntax tree" back from it.
+*/
+package parser
 
 import (
 	"errors"
 	"fmt"
+	"github.com/aichaos/rivescript-go/ast"
 	"strconv"
 	"strings"
 )
 
-func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, error) {
-	rs.say("In parse!")
+const RS_VERSION float64 = 2.0
 
-	// Eventual return structure
-	ast := newAST()
-	ast.begin.global["hi"] = "true"
+/*
+ParserConfig configures the parser.
+
+Configuration Options
+
+	Strict: Enable strict syntax checking. Syntax errors will be considered
+		fatal and abandon the parsing process.
+	UTF8: Enable UTF-8 mode. When enabled, this allows triggers to contain
+		foreign symbols without raising a syntax error.
+	OnDebug: A function handler for receiving debug information from this
+		package, if you want that information.
+	OnWarn: A function handler for receiving warnings (non-fatal errors) from
+		this package.
+
+All options have meaningful zero values.
+*/
+type ParserConfig struct {
+	Strict bool // Strict syntax checking enable (true by default)
+	UTF8   bool // Enable UTF-8 mode (false by default)
+
+	// Optional handlers for the caller to get debug information out.
+	OnDebug func(message string, a ...interface{})
+	OnWarn  func(message, filename string, lineno int, a ...interface{})
+}
+
+type Parser struct {
+	C ParserConfig
+}
+
+// New creates and returns a new instance of a RiveScript Parser.
+func New(config ParserConfig) *Parser {
+	self := new(Parser)
+	self.C = config
+	return self
+}
+
+// say proxies to the OnDebug handler.
+func (self *Parser) say(message string, a ...interface{}) {
+	if self.C.OnDebug != nil {
+		self.C.OnDebug(message, a...)
+	}
+}
+
+// warn proxies to the OnWarn handler.
+func (self *Parser) warn(message, filename string, lineno int, a ...interface{}) {
+	if self.C.OnWarn != nil {
+		self.C.OnWarn(message, filename, lineno, a...)
+	}
+}
+
+/*
+Parse reads and parses RiveScript source code.
+
+This will return an AST Root object containing all of the relevant
+information parsed from the source code.
+
+In case of errors (e.g. a syntax error while Strict Mode is enabled) will
+return a nil AST root and an error object.
+
+Parameters
+
+	filename: An arbitrary name for the source code being parsed. It will be
+		used when reporting warnings from this package.
+	code: An array of lines of RiveScript source code.
+*/
+func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
+	self.say("In parse!")
+
+	// Eventual return structure.
+	// NOTE: the all caps AST is the instance, and the lowercase ast is the
+	//       package that defines the types.
+	AST := ast.New()
+	AST.Begin.Global["hi"] = "true"
 
 	// Track temporary variables
-	topic := "random"       // Default topic = random
-	lineno := 0             // Line numbers for syntax tracking
-	comment := false        // In a multi-line comment
-	inobj := false          // In an object macro
-	objName := ""           // Name of the object we're in
-	objLang := ""           // The programming language of the object
-	objBuf := []string{}    // Source code buffer of the object
-	isThat := ""            // Is a %Previous trigger
-	var curTrig *astTrigger // Pointer to the current trigger
+	topic := "random"        // Default topic = random
+	lineno := 0              // Line numbers for syntax tracking
+	comment := false         // In a multi-line comment
+	inobj := false           // In an object macro
+	objName := ""            // Name of the object we're in
+	objLang := ""            // The programming language of the object
+	objBuf := []string{}     // Source code buffer of the object
+	isThat := ""             // Is a %Previous trigger
+	var curTrig *ast.Trigger // Pointer to the current trigger
 	curTrig = nil
 
 	// Local (file-scoped) parser options.
@@ -55,11 +132,11 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 			if strings.Contains(line, "< object") || strings.Contains(line, "<object") {
 				// End the object
 				if len(objName) > 0 {
-					newObject := new(astObject)
-					newObject.name = objName
-					newObject.language = objLang
-					newObject.code = objBuf
-					ast.objects = append(ast.objects, newObject)
+					newObject := new(ast.Object)
+					newObject.Name = objName
+					newObject.Language = objLang
+					newObject.Code = objBuf
+					AST.Objects = append(AST.Objects, newObject)
 				}
 				inobj = false
 			} else {
@@ -93,7 +170,7 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 
 		// Separate the command from its data.
 		if len(line) < 2 {
-			rs.warnSyntax("Weird single-character line '%s' found", filename, lineno, line)
+			self.warn("Weird single-character line '%s' found", filename, lineno, line)
 			continue
 		}
 		cmd := string(line[0])
@@ -111,7 +188,7 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 			isThat = ""
 		}
 
-		rs.say("Cmd: %s; line: %s", cmd, line)
+		self.say("Cmd: %s; line: %s", cmd, line)
 
 		// Do a look-ahead for ^Continue and %Previous commands.
 		if cmd != "^" {
@@ -133,7 +210,7 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 					break
 				}
 
-				rs.say("\tLookahead %d: %s %s", li, lookCmd, lookahead)
+				self.say("\tLookahead %d: %s %s", li, lookCmd, lookahead)
 
 				// If the current command is a +, see if the following is a %
 				if cmd == "+" {
@@ -206,11 +283,11 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 
 			// All other types of define's require a value and a variable name.
 			if len(name) == 0 {
-				rs.warnSyntax("Undefined variable name", filename, lineno)
+				self.warn("Undefined variable name", filename, lineno)
 				continue
 			}
 			if len(value) == 0 {
-				rs.warnSyntax("Undefined variable value", filename, lineno)
+				self.warn("Undefined variable value", filename, lineno)
 				continue
 			}
 
@@ -218,19 +295,19 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 			switch type_ {
 			case "local":
 				// Local file-scoped parser options
-				rs.say("\tSet local parser option %s = %s", name, value)
+				self.say("\tSet local parser option %s = %s", name, value)
 				localOptions[name] = value
 			case "global":
 				// Set a 'global' variable.
-				rs.say("\tSet global %s = %s", name, value)
-				ast.begin.global[name] = value
+				self.say("\tSet global %s = %s", name, value)
+				AST.Begin.Global[name] = value
 			case "var":
 				// Set a bot variable.
-				rs.say("\tSet bot variable %s = %s", name, value)
-				ast.begin.var_[name] = value
+				self.say("\tSet bot variable %s = %s", name, value)
+				AST.Begin.Var[name] = value
 			case "array":
 				// Set an array
-				rs.say("\tSet array %s = %s", name, value)
+				self.say("\tSet array %s = %s", name, value)
 
 				// Did we have multiple parts?
 				parts := strings.Split(value, "<crlf>")
@@ -251,17 +328,17 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 					fields[i] = spaceReplacer.Replace(fields[i])
 				}
 
-				ast.begin.array[name] = fields
+				AST.Begin.Array[name] = fields
 			case "sub":
 				// Substitutions
-				rs.say("\tSet substitution %s = %s", name, value)
-				ast.begin.sub[name] = value
+				self.say("\tSet substitution %s = %s", name, value)
+				AST.Begin.Sub[name] = value
 			case "person":
 				// Person substitutions
-				rs.say("\tSet person substitution %s = %s", name, value)
-				ast.begin.person[name] = value
+				self.say("\tSet person substitution %s = %s", name, value)
+				AST.Begin.Person[name] = value
 			default:
-				rs.warnSyntax("Unknown definition type '%s'", filename, lineno, type_)
+				self.warn("Unknown definition type '%s'", filename, lineno, type_)
 			}
 		case ">": // > Label
 			temp := strings.Split(strings.TrimSpace(line), " ")
@@ -279,17 +356,17 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 
 			// Handle the label types.
 			if type_ == "begin" {
-				rs.say("Found the BEGIN block.")
+				self.say("Found the BEGIN block.")
 				type_ = "topic"
 				name = "__begin__"
 			}
 			if type_ == "topic" {
-				rs.say("Set topic to %s", name)
+				self.say("Set topic to %s", name)
 				curTrig = nil
 				topic = name
 
 				// Initialize the topic tree.
-				ast = initTopic(ast, topic)
+				AST.AddTopic(topic)
 
 				// Does this topic include or inherit another one?
 				mode := ""
@@ -298,9 +375,9 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 						if field == "includes" || field == "inherits" {
 							mode = field
 						} else if mode == "includes" {
-							ast.topics[topic].includes[field] = true
+							AST.Topics[topic].Includes[field] = true
 						} else if mode == "inherits" {
-							ast.topics[topic].inherits[field] = true
+							AST.Topics[topic].Inherits[field] = true
 						}
 					}
 				}
@@ -313,7 +390,7 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 
 				// Missing language?
 				if lang == "" {
-					rs.warnSyntax("No programming language specified for object '%s'", filename, lineno, name)
+					self.warn("No programming language specified for object '%s'", filename, lineno, name)
 					continue
 				}
 
@@ -323,61 +400,61 @@ func (rs *RiveScript) parseSource(filename string, code []string) (*astRoot, err
 				objBuf = []string{}
 				inobj = true
 			} else {
-				rs.warnSyntax("Unknown label type '%s'", filename, lineno, type_)
+				self.warn("Unknown label type '%s'", filename, lineno, type_)
 			}
 		case "<": // < Label
 			type_ := line
 
 			if type_ == "begin" || type_ == "topic" {
-				rs.say("\tEnd the topic label.")
+				self.say("\tEnd the topic label.")
 				topic = "random" // Go back to default topic
 			} else if type_ == "object" {
-				rs.say("\tEnd the object label.")
+				self.say("\tEnd the object label.")
 				inobj = false
 			}
 		case "+": // +Trigger
-			rs.say("\tTrigger pattern: %s", line)
+			self.say("\tTrigger pattern: %s", line)
 
 			// Initialize the trigger tree.
-			curTrig = new(astTrigger)
-			curTrig.trigger = line
-			curTrig.reply = []string{}
-			curTrig.condition = []string{}
-			curTrig.redirect = ""
-			curTrig.previous = isThat
-			ast.topics[topic].triggers = append(ast.topics[topic].triggers, curTrig)
+			curTrig = new(ast.Trigger)
+			curTrig.Trigger = line
+			curTrig.Reply = []string{}
+			curTrig.Condition = []string{}
+			curTrig.Redirect = ""
+			curTrig.Previous = isThat
+			AST.Topics[topic].Triggers = append(AST.Topics[topic].Triggers, curTrig)
 		case "-": // -Response
 			if curTrig == nil {
-				rs.warnSyntax("Response found before trigger", filename, lineno)
+				self.warn("Response found before trigger", filename, lineno)
 				continue
 			}
 
-			rs.say("\tResponse: %s", line)
-			curTrig.reply = append(curTrig.reply, line)
+			self.say("\tResponse: %s", line)
+			curTrig.Reply = append(curTrig.Reply, line)
 		case "*": // *condition
 			if curTrig == nil {
-				rs.warnSyntax("Condition found before trigger", filename, lineno)
+				self.warn("Condition found before trigger", filename, lineno)
 				continue
 			}
 
-			rs.say("\tCondition: %s", line)
-			curTrig.condition = append(curTrig.condition, line)
+			self.say("\tCondition: %s", line)
+			curTrig.Condition = append(curTrig.Condition, line)
 		case "%": // %Previous
 			continue // This was handled above
 		case "^": // ^Continue
 			continue // This was handled above
 		case "@": // @Redirect
 			if curTrig == nil {
-				rs.warnSyntax("Redirect found before trigger", filename, lineno)
+				self.warn("Redirect found before trigger", filename, lineno)
 				continue
 			}
 
-			rs.say("\tRedirect response to: %s", line)
-			curTrig.redirect = line
+			self.say("\tRedirect response to: %s", line)
+			curTrig.Redirect = line
 		default:
-			rs.warnSyntax("Unknown command '%s'", filename, lineno, cmd)
+			self.warn("Unknown command '%s'", filename, lineno, cmd)
 		}
 	}
 
-	return ast, nil
+	return AST, nil
 }

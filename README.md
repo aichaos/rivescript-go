@@ -14,7 +14,7 @@ to write trigger/response pairs for building up a bot's intelligence.
 
 * RiveScript Library: <http://godoc.org/github.com/aichaos/rivescript-go>
 * RiveScript Stand-alone Interpreter: <http://godoc.org/github.com/aichaos/rivescript-go/cmd/rivescript>
-* JavaScript Object Macros: <http://godoc.org/github.com/aichaos/rivescript-go/lang/rivescript_js>
+* JavaScript Object Macros: <http://godoc.org/github.com/aichaos/rivescript-go/lang/javascript>
 
 ## Installation
 
@@ -174,6 +174,13 @@ The distributable directory contains only the following types of files:
 * Example brain at `eg/brain`
 * (Windows only) a super simple batch file for launching `rivescript.exe` and
   pointing it to the example brain: `example.bat`
+
+## See Also
+
+* [rivescript-go/parser](./parser) - A standalone package for parsing RiveScript
+  code and returning an "abstract syntax tree."
+* [rivescript-go/macro](./macro) - Contains an interface for creating your own
+  object macro handlers for foreign programming languages.
 
 ## License
 

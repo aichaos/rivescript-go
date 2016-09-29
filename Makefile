@@ -19,7 +19,7 @@ fmt:
 
 # `make test` to run unit tests
 test: gopath
-	GOPATH=$(GOPATH) GO15VENDOREXPERIMENT=1 go test
+	GOPATH=$(GOPATH) GO15VENDOREXPERIMENT=1 go test github.com/aichaos/rivescript-go/src
 
 # `make build` to build the binary
 build: gopath

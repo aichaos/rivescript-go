@@ -1,4 +1,4 @@
-package rivescript
+package src
 
 import "fmt"
 

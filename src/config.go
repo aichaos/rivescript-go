@@ -1,53 +1,28 @@
-package rivescript
+package src
 
 // Public API Configuration Methods
 
 import (
 	"errors"
+	"github.com/aichaos/rivescript-go/macro"
 )
 
-/*
-SetHandler sets a custom language handler for RiveScript object macros.
-*/
-func (rs *RiveScript) SetHandler(lang string, handler MacroInterface) {
+func (rs *RiveScript) SetHandler(lang string, handler macro.MacroInterface) {
 	rs.handlers[lang] = handler
 }
 
-/*
-DeleteHandler removes an object macro language handler.
-*/
 func (rs *RiveScript) RemoveHandler(lang string) {
 	delete(rs.handlers, lang)
 }
 
-// Subroutine is a Golang function type for defining an object macro in Go.
-type Subroutine func(*RiveScript, []string) string
-
-/*
-SetSubroutine defines a Go object macro from your program.
-
-Params:
-
-	name: The name of your subroutine for the `<call>` tag in RiveScript.
-	fn: A function with a prototype `func(*RiveScript, []string) string`
-*/
 func (rs *RiveScript) SetSubroutine(name string, fn Subroutine) {
 	rs.subroutines[name] = fn
 }
 
-/*
-DeleteSubroutine removes a Go object macro.
-*/
 func (rs *RiveScript) DeleteSubroutine(name string) {
 	delete(rs.subroutines, name)
 }
 
-/*
-SetGlobal sets a global variable.
-
-This is equivalent to `! global` in RiveScript. Set the value to `undefined`
-to delete a global.
-*/
 func (rs *RiveScript) SetGlobal(name string, value string) {
 	if value == "undefined" {
 		delete(rs.global, name)
@@ -56,12 +31,6 @@ func (rs *RiveScript) SetGlobal(name string, value string) {
 	}
 }
 
-/*
-SetVariable sets a bot variable.
-
-This is equivalent to `! var` in RiveScript. Set the value to `undefined`
-to delete a bot variable.
-*/
 func (rs *RiveScript) SetVariable(name string, value string) {
 	if value == "undefined" {
 		delete(rs.var_, name)
@@ -70,12 +39,6 @@ func (rs *RiveScript) SetVariable(name string, value string) {
 	}
 }
 
-/*
-SetSubstitution sets a substitution pattern.
-
-This is equivalent to `! sub` in RiveScript. Set the value to `undefined`
-to delete a substitution.
-*/
 func (rs *RiveScript) SetSubstitution(name string, value string) {
 	if value == "undefined" {
 		delete(rs.sub, name)
@@ -84,12 +47,6 @@ func (rs *RiveScript) SetSubstitution(name string, value string) {
 	}
 }
 
-/*
-SetPerson sets a person substitution pattern.
-
-This is equivalent to `! person` in RiveScript. Set the value to `undefined`
-to delete a person substitution.
-*/
 func (rs *RiveScript) SetPerson(name string, value string) {
 	if value == "undefined" {
 		delete(rs.person, name)
@@ -98,12 +55,6 @@ func (rs *RiveScript) SetPerson(name string, value string) {
 	}
 }
 
-/*
-SetUservar sets a variable for a user.
-
-This is equivalent to `<set>` in RiveScript. Set the value to `undefined`
-to delete a substitution.
-*/
 func (rs *RiveScript) SetUservar(username string, name string, value string) {
 	// Initialize the user?
 	if _, ok := rs.users[username]; !ok {
@@ -117,12 +68,6 @@ func (rs *RiveScript) SetUservar(username string, name string, value string) {
 	}
 }
 
-/*
-SetUservars sets a map of variables for a user.
-
-Set multiple user variables by providing a map[string]string of key/value pairs.
-Equivalent to calling `SetUservar()` for each pair in the map.
-*/
 func (rs *RiveScript) SetUservars(username string, data map[string]string) {
 	// Initialize the user?
 	if _, ok := rs.users[username]; !ok {
@@ -138,12 +83,13 @@ func (rs *RiveScript) SetUservars(username string, data map[string]string) {
 	}
 }
 
-/*
-GetVariable gets a bot variable.
+func (rs *RiveScript) GetGlobal(name string) (string, error) {
+	if _, ok := rs.global[name]; ok {
+		return rs.global[name], nil
+	}
+	return "undefined", errors.New("Global variable not found.")
+}
 
-This is equivalent to `<bot name>` in RiveScript. Returns `undefined` if the
-variable isn't defined.
-*/
 func (rs *RiveScript) GetVariable(name string) (string, error) {
 	if _, ok := rs.var_[name]; ok {
 		return rs.var_[name], nil
@@ -151,12 +97,6 @@ func (rs *RiveScript) GetVariable(name string) (string, error) {
 	return "undefined", errors.New("Variable not found.")
 }
 
-/*
-GetUservar gets a user variable.
-
-This is equivalent to `<get name>` in RiveScript. Returns `undefined` if the
-variable isn't defined.
-*/
 func (rs *RiveScript) GetUservar(username string, name string) (string, error) {
 	if _, ok := rs.users[username]; ok {
 		if _, ok := rs.users[username].data[name]; ok {
@@ -166,11 +106,6 @@ func (rs *RiveScript) GetUservar(username string, name string) (string, error) {
 	return "undefined", errors.New("User variable not found.")
 }
 
-/*
-GetUservars gets all the variables for a user.
-
-This returns a `map[string]string` containing all the user's variables.
-*/
 func (rs *RiveScript) GetUservars(username string) (map[string]string, error) {
 	if _, ok := rs.users[username]; ok {
 		return rs.users[username].data, nil
@@ -178,12 +113,6 @@ func (rs *RiveScript) GetUservars(username string) (map[string]string, error) {
 	return map[string]string{}, errors.New("Username not found.")
 }
 
-/*
-GetAllUservars gets all the variables for all the users.
-
-This returns a map of username (strings) to `map[string]string` of their
-variables.
-*/
 func (rs *RiveScript) GetAllUservars() map[string]map[string]string {
 	result := map[string]map[string]string{}
 	for username, data := range rs.users {
@@ -192,28 +121,16 @@ func (rs *RiveScript) GetAllUservars() map[string]map[string]string {
 	return result
 }
 
-/*
-ClearUservars clears all a user's variables.
-*/
 func (rs *RiveScript) ClearUservars(username string) {
 	delete(rs.users, username)
 }
 
-/*
-ClearAllUservars clears all variables for all users.
-*/
 func (rs *RiveScript) ClearAllUservars() {
 	for username, _ := range rs.users {
 		delete(rs.users, username)
 	}
 }
 
-/*
-FreezeUservars freezes the variable state of a user.
-
-This will clone and preserve the user's entire variable state, so that it
-can be restored later with `ThawUservars()`.
-*/
 func (rs *RiveScript) FreezeUservars(username string) error {
 	if _, ok := rs.users[username]; ok {
 		delete(rs.freeze, username) // Always start fresh
@@ -234,14 +151,6 @@ func (rs *RiveScript) FreezeUservars(username string) error {
 	return errors.New("Username not found.")
 }
 
-/*
-ThawUservars unfreezes a user's variables.
-
-The `action` can be one of the following:
-* thaw: Restore the variables and delete the frozen copy.
-* discard: Don't restore the variables, just delete the frozen copy.
-* keep: Keep the frozen copy after restoring.
-*/
 func (rs *RiveScript) ThawUservars(username string, action string) error {
 	if _, ok := rs.freeze[username]; ok {
 		// What are we doing?
@@ -273,9 +182,6 @@ func (rs *RiveScript) ThawUservars(username string, action string) error {
 	return errors.New("Username not found.")
 }
 
-/*
-LastMatch returns the user's last matched trigger.
-*/
 func (rs *RiveScript) LastMatch(username string) (string, error) {
 	if _, ok := rs.users[username]; ok {
 		return rs.users[username].lastMatch, nil
@@ -283,9 +189,6 @@ func (rs *RiveScript) LastMatch(username string) (string, error) {
 	return "", errors.New("Username not found.")
 }
 
-/*
-CurrentUser returns the current user's ID.
-*/
 func (rs *RiveScript) CurrentUser() string {
 	return rs.currentUser
 }

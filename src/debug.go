@@ -1,4 +1,4 @@
-package rivescript
+package src
 
 // Debugging methods
 
@@ -6,7 +6,24 @@ import (
 	"fmt"
 )
 
-// DumpTopics is a debug method which dumps the topic structure from the bot's memory.
+// say prints a debugging message
+func (rs *RiveScript) say(message string, a ...interface{}) {
+	if rs.Debug {
+		fmt.Printf(message+"\n", a...)
+	}
+}
+
+// warn prints a warning message for non-fatal errors
+func (rs *RiveScript) warn(message string, a ...interface{}) {
+	fmt.Printf("[WARN] "+message+"\n", a...)
+}
+
+// warnSyntax is like warn but takes a filename and line number.
+func (rs *RiveScript) warnSyntax(message string, filename string, lineno int, a ...interface{}) {
+	message += fmt.Sprintf(" at %s line %d", filename, lineno)
+	rs.warn(message, a...)
+}
+
 func (rs *RiveScript) DumpTopics() {
 	for topic, data := range rs.topics {
 		fmt.Printf("Topic: %s\n", topic)
@@ -28,7 +45,6 @@ func (rs *RiveScript) DumpTopics() {
 	}
 }
 
-// DumpSorted is a debug method which dumps the sort tree from the bot's memory.
 func (rs *RiveScript) DumpSorted() {
 	rs._dumpSorted(rs.sorted.topics, "Topics")
 	rs._dumpSorted(rs.sorted.thats, "Thats")

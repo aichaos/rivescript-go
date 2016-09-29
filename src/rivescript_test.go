@@ -1,8 +1,7 @@
-package rivescript_test
+package src_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 )
 
@@ -610,7 +609,7 @@ func TestConcat(t *testing.T) {
 
 func TestUnicode(t *testing.T) {
 	bot := NewTest(t)
-	bot.bot.UTF8 = true
+	bot.bot.SetUTF8(true)
 	bot.extend(`
 		! sub who's = who is
 		+ äh
@@ -661,7 +660,7 @@ func TestUnicode(t *testing.T) {
 
 func TestPunctuation(t *testing.T) {
 	bot := NewTest(t)
-	bot.bot.UTF8 = true
+	bot.bot.SetUTF8(true)
 	bot.extend(`
 		+ hello bot
 		- Hello human!
@@ -672,7 +671,7 @@ func TestPunctuation(t *testing.T) {
 	bot.reply("Hello: Bot", "Hello human!")
 	bot.reply("Hello... bot?", "Hello human!")
 
-	bot.bot.UnicodePunctuation = regexp.MustCompile(`xxx`)
+	bot.bot.SetUnicodePunctuation(`xxx`)
 	bot.reply("Hello bot", "Hello human!")
 	bot.reply("Hello, bot!", "ERR: No Reply Matched")
 }
