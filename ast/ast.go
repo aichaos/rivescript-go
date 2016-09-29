@@ -19,41 +19,41 @@ package ast
 
 // Type Root represents the root of the AST tree.
 type Root struct {
-	Begin   Begin
-	Topics  map[string]*Topic
-	Objects []*Object
+	Begin   Begin             `json:"begin"`
+	Topics  map[string]*Topic `json:"topics"`
+	Objects []*Object         `json:"objects"`
 }
 
 // Type Begin represents the "begin block" style data (configuration).
 type Begin struct {
-	Global map[string]string
-	Var    map[string]string
-	Sub    map[string]string
-	Person map[string]string
-	Array  map[string][]string // Map of string (names) to arrays-of-strings
+	Global map[string]string   `json:"global"`
+	Var    map[string]string   `json:"var"`
+	Sub    map[string]string   `json:"sub"`
+	Person map[string]string   `json:"person"`
+	Array  map[string][]string `json:"array"` // Map of string (names) to arrays-of-strings
 }
 
 // Type Topic represents a topic of conversation.
 type Topic struct {
-	Triggers []*Trigger
-	Includes map[string]bool
-	Inherits map[string]bool
+	Triggers []*Trigger      `json:"triggers"`
+	Includes map[string]bool `json:"includes"`
+	Inherits map[string]bool `json:"inherits"`
 }
 
 // Type Trigger has a trigger pattern and all the subsequent handlers for it.
 type Trigger struct {
-	Trigger   string
-	Reply     []string
-	Condition []string
-	Redirect  string
-	Previous  string
+	Trigger   string   `json:"trigger"`
+	Reply     []string `json:"reply"`
+	Condition []string `json:"condition"`
+	Redirect  string   `json:"redirect"`
+	Previous  string   `json:"previous"`
 }
 
 // Type Object contains source code of dynamically parsed object macros.
 type Object struct {
-	Name     string
-	Language string
-	Code     []string
+	Name     string   `json:"name"`
+	Language string   `json:"language"`
+	Code     []string `json:"code"`
 }
 
 // New creates a new, empty, abstract syntax tree.

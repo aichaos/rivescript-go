@@ -72,10 +72,10 @@ func (rs *RiveScript) parse(path string, lines []string) error {
 			// Convert this AST trigger into an internal astmap trigger.
 			trigger := new(astTrigger)
 			trigger.trigger = trig.Trigger
-			trigger.reply   = trig.Reply
+			trigger.reply = trig.Reply
 			trigger.condition = trig.Condition
-			trigger.redirect  = trig.Redirect
-			trigger.previous  = trig.Previous
+			trigger.redirect = trig.Redirect
+			trigger.previous = trig.Previous
 
 			rs.topics[topic].triggers = append(rs.topics[topic].triggers, trigger)
 

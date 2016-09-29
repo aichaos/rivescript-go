@@ -19,9 +19,9 @@ You've been warned. Here be dragons.
 package src
 
 import (
-	"regexp"
 	"github.com/aichaos/rivescript-go/macro"
 	"github.com/aichaos/rivescript-go/parser"
+	"regexp"
 )
 
 const (
@@ -40,21 +40,21 @@ type RiveScript struct {
 	parser *parser.Parser
 
 	// Internal data structures
-	global      map[string]string          // 'global' variables
-	var_        map[string]string          // 'var' bot variables
-	sub         map[string]string          // 'sub' substitutions
-	person      map[string]string          // 'person' substitutions
-	array       map[string][]string        // 'array'
-	users       map[string]*userData       // user variables
-	freeze      map[string]*userData       // frozen user variables
-	includes    map[string]map[string]bool // included topics
-	inherits    map[string]map[string]bool // inherited topics
-	objlangs    map[string]string          // object macro languages
-	handlers    map[string]macro.MacroInterface  // object language handlers
-	subroutines map[string]Subroutine      // Golang object handlers
-	topics      map[string]*astTopic       // main topic structure
-	thats       map[string]*thatTopic      // %Previous mapper
-	sorted      *sortBuffer                // Sorted data from SortReplies()
+	global      map[string]string               // 'global' variables
+	var_        map[string]string               // 'var' bot variables
+	sub         map[string]string               // 'sub' substitutions
+	person      map[string]string               // 'person' substitutions
+	array       map[string][]string             // 'array'
+	users       map[string]*userData            // user variables
+	freeze      map[string]*userData            // frozen user variables
+	includes    map[string]map[string]bool      // included topics
+	inherits    map[string]map[string]bool      // inherited topics
+	objlangs    map[string]string               // object macro languages
+	handlers    map[string]macro.MacroInterface // object language handlers
+	subroutines map[string]Subroutine           // Golang object handlers
+	topics      map[string]*astTopic            // main topic structure
+	thats       map[string]*thatTopic           // %Previous mapper
+	sorted      *sortBuffer                     // Sorted data from SortReplies()
 
 	// State information.
 	currentUser string
@@ -74,10 +74,10 @@ func New() *RiveScript {
 
 	// Initialize helpers.
 	rs.parser = parser.New(parser.ParserConfig{
-		Strict: rs.Strict,
-		UTF8: rs.UTF8,
+		Strict:  rs.Strict,
+		UTF8:    rs.UTF8,
 		OnDebug: rs.say,
-		OnWarn: rs.warnSyntax,
+		OnWarn:  rs.warnSyntax,
 	})
 
 	// Initialize all the data structures.

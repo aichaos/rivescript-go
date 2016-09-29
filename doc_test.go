@@ -3,8 +3,8 @@ package rivescript_test
 import (
 	"fmt"
 	rivescript "github.com/aichaos/rivescript-go"
-	"github.com/aichaos/rivescript-go/src"
 	js "github.com/aichaos/rivescript-go/lang/javascript"
+	"github.com/aichaos/rivescript-go/src"
 )
 
 func ExampleRiveScript() {

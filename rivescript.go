@@ -13,8 +13,8 @@ package rivescript
 */
 
 import (
-	"github.com/aichaos/rivescript-go/src"
 	"github.com/aichaos/rivescript-go/macro"
+	"github.com/aichaos/rivescript-go/src"
 )
 
 const VERSION = src.VERSION

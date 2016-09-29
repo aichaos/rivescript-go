@@ -8,9 +8,9 @@ RiveScript source code and get an "abstract syntax tree" back from it.
 package parser
 
 import (
-	"github.com/aichaos/rivescript-go/ast"
 	"errors"
 	"fmt"
+	"github.com/aichaos/rivescript-go/ast"
 	"strconv"
 	"strings"
 )
@@ -34,8 +34,8 @@ Configuration Options
 All options have meaningful zero values.
 */
 type ParserConfig struct {
-	Strict bool  // Strict syntax checking enable (true by default)
-	UTF8   bool  // Enable UTF-8 mode (false by default)
+	Strict bool // Strict syntax checking enable (true by default)
+	UTF8   bool // Enable UTF-8 mode (false by default)
 
 	// Optional handlers for the caller to get debug information out.
 	OnDebug func(message string, a ...interface{})
