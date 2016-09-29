@@ -3,7 +3,7 @@ package rivescript_test
 import (
 	"fmt"
 	rivescript "github.com/aichaos/rivescript-go/rivescript"
-	"github.com/aichaos/rivescript-go/lang/rivescript_js"
+	js "github.com/aichaos/rivescript-go/lang/javascript"
 )
 
 func ExampleRiveScript() {
@@ -29,7 +29,7 @@ func ExampleRiveScript_javascript() {
 	bot := rivescript.New()
 
 	// Create the JS handler.
-	jsHandler := rivescript_js.New(bot)
+	jsHandler := js.New(bot)
 	bot.SetHandler("javascript", jsHandler)
 
 	// Now we can use object macros written in JS!

@@ -1,16 +1,20 @@
 /*
-Package rivescript_js implements JavaScript object macros for RiveScript.
+Package javascript implements JavaScript object macros for RiveScript.
+
+This is powered by the Otto JavaScript engine[1], which is a JavaScript engine
+written in pure Go. It is not the V8 engine used by Node, so expect possible
+compatibility issues to arise.
 
 Usage is simple. In your Golang code:
 
 	import (
-		rivescript "github.com/aichaos/rivescript-go"
-		"github.com/aichaos/rivescript-go/lang/rivescript_js"
+		"github.com/aichaos/rivescript-go/rivescript"
+		"github.com/aichaos/rivescript-go/lang/javascript"
 	)
 
 	func main() {
 		bot := rivescript.New()
-		jsHandler := rivescript_js.New(bot)
+		jsHandler := javascript.New(bot)
 		bot.SetHandler("javascript", jsHandler)
 
 		// and go on as normal
@@ -38,8 +42,10 @@ And in your RiveScript code, you can load and run JavaScript objects:
 
 	+ what is my name
 	- You are <get name>.
+
+[1]: https://github.com/robertkrimen/otto
 */
-package rivescript_js
+package javascript
 
 import (
 	"fmt"

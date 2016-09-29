@@ -108,7 +108,7 @@ Here is a walkthrough of the code layout in a more logical fashion.
 
 ## Object Macro Language Handlers
 
-* `lang/rivescript_js` - JavaScript support.
+* `lang/javascript` - JavaScript support via Otto.
 
 ## Stand-alone RiveScript Interpreter
 

@@ -21,7 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/aichaos/rivescript-go/rivescript"
-	"github.com/aichaos/rivescript-go/lang/rivescript_js"
+	js "github.com/aichaos/rivescript-go/lang/javascript"
 	"os"
 	"strings"
 )
@@ -54,7 +54,7 @@ func main() {
 	bot.Depth = *depth
 
 	// JavaScript object macro handler.
-	jsHandler := rivescript_js.New(bot)
+	jsHandler := js.New(bot)
 	bot.SetHandler("javascript", jsHandler)
 
 	// Load the target directory.
@@ -66,14 +66,17 @@ func main() {
 
 	bot.SortReplies()
 
-	fmt.Printf(`RiveScript Interpreter (Golang) -- Interactive Mode
----------------------------------------------------
-RiveScript version: %s
-        Reply root: %s
+	fmt.Printf(`
+      .   .
+     .:...::      RiveScript Interpreter (Go)
+    .::   ::.     Library Version: v%s
+ ..:;;. ' .;;:..
+    .  '''  .     Type '/quit' to quit.
+     :;,:,;:      Type '/help' for more options.
+     :     :
 
-You are now chatting with the RiveScript bot. Type a message
-and press Return to send it. When finished, type '/quit' to
-exit the program. Type '/help' for other options.
+Using the RiveScript bot found in: %s
+Type a message to the bot and press Return to send it.
 `, bot.Version(), root)
 
 	// Drop into the interactive command shell.
