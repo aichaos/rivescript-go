@@ -3,12 +3,12 @@ package rivescript
 import (
 	"fmt"
 	"regexp"
+	"github.com/aichaos/rivescript-go/parser"
 )
 
 // Constants
 const (
 	VERSION            = "0.0.2"
-	RS_VERSION float64 = 2.0
 )
 
 /******************************************************************************
@@ -22,6 +22,9 @@ type RiveScript struct {
 	Depth              int  // Max depth for recursion
 	UTF8               bool // Support UTF-8 RiveScript code
 	UnicodePunctuation *regexp.Regexp
+
+	// Internal helpers
+	parser *parser.Parser
 
 	// Internal data structures
 	global      map[string]string          // 'global' variables
@@ -51,6 +54,14 @@ func New() *RiveScript {
 	rs.Depth = 50
 	rs.UTF8 = false
 	rs.UnicodePunctuation = regexp.MustCompile(`[.,!?;:]`)
+
+	// Initialize helpers.
+	rs.parser = parser.New(parser.ParserConfig{
+		Strict: rs.Strict,
+		UTF8: rs.UTF8,
+		OnDebug: rs.say,
+		OnWarn: rs.warnSyntax,
+	})
 
 	// Initialize all the data structures.
 	rs.global = map[string]string{}

@@ -54,12 +54,3 @@ type sortTrack struct {
 	under  []sortedTriggerEntry         // Triggers of just '_'
 	star   []sortedTriggerEntry         // Triggers of just '*'
 }
-
-// This is like astTopic but is just for %Previous mapping
-type thatTopic struct {
-	triggers map[string]*thatTrigger
-}
-
-type thatTrigger struct {
-	previous map[string]*astTrigger
-}

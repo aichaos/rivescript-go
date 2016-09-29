@@ -13,7 +13,7 @@ import (
 /*
 Reply fetches a reply from the bot for a user's message.
 
-Params:
+Parameters
 
 	username: The name of the user requesting a reply.
 	message: The user's message.
@@ -65,7 +65,7 @@ func (rs *RiveScript) Reply(username string, message string) string {
 /*
 getReply is the internal logic behind Reply().
 
-Params:
+Parameters
 
 	username: The name of the user requesting a reply.
 	message: The user's message.
