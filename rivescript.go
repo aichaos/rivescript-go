@@ -17,7 +17,7 @@ import (
 	"github.com/aichaos/rivescript-go/src"
 )
 
-const VERSION = src.VERSION
+const VERSION string = "0.0.3"
 
 type RiveScript struct {
 	rs *src.RiveScript
@@ -27,6 +27,11 @@ func New() *RiveScript {
 	bot := new(RiveScript)
 	bot.rs = src.New()
 	return bot
+}
+
+// Version returns the RiveScript library version.
+func (self *RiveScript) Version() string {
+	return VERSION
 }
 
 // SetDebug enables or disable debug mode.
@@ -348,10 +353,6 @@ Parameters
 */
 func (self *RiveScript) Reply(username, message string) string {
 	return self.rs.Reply(username, message)
-}
-
-func (self *RiveScript) Version() string {
-	return self.rs.Version()
 }
 
 ////////////////////////////////////////////////////////////////////////////////

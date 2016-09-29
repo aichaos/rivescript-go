@@ -24,10 +24,6 @@ import (
 	"regexp"
 )
 
-const (
-	VERSION string = "0.0.3"
-)
-
 type RiveScript struct {
 	// Parameters
 	Debug              bool // Debug mode
@@ -100,10 +96,6 @@ func New() *RiveScript {
 	// Initialize Golang handler.
 	//rs.handlers["go"] = new(golangHandler)
 	return rs
-}
-
-func (rs *RiveScript) Version() string {
-	return VERSION
 }
 
 func (rs *RiveScript) SetDebug(value bool) {
