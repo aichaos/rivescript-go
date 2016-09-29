@@ -8,17 +8,11 @@ This update was all about restructuring the internal source code to make certain
 internal modules exportable for third party users (e.g. the parser) and to
 reduce clutter from the root of the git repo.
 
-* **Important Breaking Change:** The package name of the base RiveScript
-  module has been updated. Fixing this is easy:
-
-```diff
-- import rivescript "github.com/aichaos/rivescript-go"
-+ import "github.com/aichaos/rivescript-go/rivescript"
-```
-
 * Massive restructuring of the internal source code:
-  * Moved all source code *out* of the root of the git repo to reduce clutter.
-    All the core library source code is now under the `rivescript/` subpackage.
+  * Tidied up the root of the git repo by moving *all* of the implementation
+    code into the `src/` subdirectory and making the root RiveScript module a
+    very lightweight API wrapper around the code. *Note: do not import the
+    src package directly. Only go through the public API at the root module.*
   * Added public facing Parser submodule:
     [rivescript-go/parser](https://github.com/aichaos/rivescript-go/tree/master/parser).
     It enables third party developers to write applications that simply parse

@@ -12,7 +12,7 @@ to write trigger/response pairs for building up a bot's intelligence.
 
 ## Documentation
 
-* RiveScript Library: <http://godoc.org/github.com/aichaos/rivescript-go/rivescript>
+* RiveScript Library: <http://godoc.org/github.com/aichaos/rivescript-go>
 * RiveScript Stand-alone Interpreter: <http://godoc.org/github.com/aichaos/rivescript-go/cmd/rivescript>
 * JavaScript Object Macros: <http://godoc.org/github.com/aichaos/rivescript-go/lang/javascript>
 
@@ -48,7 +48,7 @@ package main
 
 import (
     "fmt"
-    "github.com/aichaos/rivescript-go/rivescript"
+    rivescript "github.com/aichaos/rivescript-go"
 )
 
 func main() {

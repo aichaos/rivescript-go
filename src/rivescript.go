@@ -1,6 +1,8 @@
 /*
 Package rivescript contains all of the private use functions of RiveScript.
 
+Do Not Use This Package Directly
+
 You should not use any exported symbols from this package directly. They are
 not stable and are subject to change at any time without notice.
 
@@ -8,9 +10,13 @@ As an end user of the RiveScript library you should stick purely to the exported
 API functions of the base RiveScript package and any other subpackages
 (for example: parser and ast) but leave the src package alone!
 
+Documentation for most exported functions is available in the root RiveScript
+package, which acts as a wrapper. Go there for documentation. Stop looking at
+this package lest you be tempted to use it (don't).
+
 You've been warned. Here be dragons.
 */
-package rivescript
+package src
 
 import (
 	"regexp"
@@ -100,28 +106,22 @@ func (rs *RiveScript) Version() string {
 	return VERSION
 }
 
-// SetDebug sets the value of rs.Debug (maybe useful for non-Go bindings)
 func (rs *RiveScript) SetDebug(value bool) {
 	rs.Debug = value
 }
 
-// SetUTF8 sets the value of rs.UTF8 (maybe useful for non-Go bindings)
 func (rs *RiveScript) SetUTF8(value bool) {
 	rs.UTF8 = value
 }
 
-// SetStrict sets the value of rs.Strict (maybe useful for non-Go bindings)
 func (rs *RiveScript) SetStrict(value bool) {
 	rs.Strict = value
 }
 
-// SetDepth sets the value of rs.Depth (maybe useful for non-Go bindings)
 func (rs *RiveScript) SetDepth(value int) {
 	rs.Depth = value
 }
 
-// SetUnicodePunctuation sets the value of rs.UnicodePunctuation (maybe useful
-// for non-Go bindings)
 func (rs *RiveScript) SetUnicodePunctuation(value string) {
 	rs.UnicodePunctuation = regexp.MustCompile(value)
 }

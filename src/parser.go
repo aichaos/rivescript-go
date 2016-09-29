@@ -1,4 +1,4 @@
-package rivescript
+package src
 
 // parse loads the RiveScript code into the bot's memory.
 func (rs *RiveScript) parse(path string, lines []string) error {

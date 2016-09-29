@@ -1,4 +1,4 @@
-package rivescript
+package src
 
 import (
 	"fmt"
@@ -10,14 +10,6 @@ import (
 
 // Brain logic for RiveScript
 
-/*
-Reply fetches a reply from the bot for a user's message.
-
-Parameters
-
-	username: The name of the user requesting a reply.
-	message: The user's message.
-*/
 func (rs *RiveScript) Reply(username string, message string) string {
 	rs.say("Asked to reply to [%s] %s", username, message)
 

@@ -8,7 +8,7 @@ compatibility issues to arise.
 Usage is simple. In your Golang code:
 
 	import (
-		"github.com/aichaos/rivescript-go/rivescript"
+		rivescript "github.com/aichaos/rivescript-go"
 		"github.com/aichaos/rivescript-go/lang/javascript"
 	)
 
@@ -49,7 +49,7 @@ package javascript
 
 import (
 	"fmt"
-	"github.com/aichaos/rivescript-go/rivescript"
+	rivescript "github.com/aichaos/rivescript-go"
 	"github.com/robertkrimen/otto"
 	"strings"
 )

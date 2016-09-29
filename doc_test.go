@@ -2,7 +2,8 @@ package rivescript_test
 
 import (
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go/rivescript"
+	rivescript "github.com/aichaos/rivescript-go"
+	"github.com/aichaos/rivescript-go/src"
 	js "github.com/aichaos/rivescript-go/lang/javascript"
 )
 
@@ -67,7 +68,7 @@ func ExampleRiveScript_subroutine() {
 	bot := rivescript.New()
 
 	// Define an object macro named `setname`
-	bot.SetSubroutine("setname", func(rs *rivescript.RiveScript, args []string) string {
+	bot.SetSubroutine("setname", func(rs *src.RiveScript, args []string) string {
 		uid := rs.CurrentUser()
 		rs.SetUservar(uid, args[0], args[1])
 		return ""

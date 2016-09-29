@@ -20,7 +20,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/aichaos/rivescript-go/rivescript"
+	rivescript "github.com/aichaos/rivescript-go"
 	js "github.com/aichaos/rivescript-go/lang/javascript"
 	"os"
 	"strings"
@@ -49,9 +49,9 @@ func main() {
 
 	// Initialize the bot.
 	bot := rivescript.New()
-	bot.Debug = *debug
-	bot.UTF8 = *utf8
-	bot.Depth = *depth
+	bot.SetDebug(*debug)
+	bot.SetUTF8(*utf8)
+	bot.SetDepth(*depth)
 
 	// JavaScript object macro handler.
 	jsHandler := js.New(bot)

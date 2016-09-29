@@ -1,4 +1,4 @@
-package rivescript
+package src
 
 // Data sorting functions
 

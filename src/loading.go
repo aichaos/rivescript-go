@@ -1,4 +1,4 @@
-package rivescript
+package src
 
 // Loading and Parsing Methods
 
@@ -11,13 +11,6 @@ import (
 	"strings"
 )
 
-/*
-LoadFile loads a single RiveScript source file from disk.
-
-Params:
-
-	path: File path to
-*/
 func (rs *RiveScript) LoadFile(path string) error {
 	rs.say("Load RiveScript file: %s", path)
 
@@ -38,14 +31,6 @@ func (rs *RiveScript) LoadFile(path string) error {
 	return rs.parse(path, lines)
 }
 
-/*
-LoadDirectory loads multiple RiveScript documents from a folder on disk.
-
-Params:
-
-	path: Path to the directory on disk
-	extensions...: List of file extensions to filter on, default is '.rive' and '.rs'
-*/
 func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 	if len(extensions) == 0 {
 		extensions = []string{".rive", ".rs"}
@@ -77,24 +62,11 @@ func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 	return nil
 }
 
-/*
-Stream loads RiveScript code from a text buffer.
-
-Params:
-	code: Raw source code of a RiveScript document, with line breaks after each line.
-*/
 func (rs *RiveScript) Stream(code string) error {
 	lines := strings.Split(code, "\n")
 	return rs.parse("Stream()", lines)
 }
 
-/*
-SortReplies sorts the reply structures in memory for optimal matching.
-
-After you have finished loading your RiveScript code, call this method to
-populate the various sort buffers. This is absolutely necessary for reply
-matching to work efficiently!
-*/
 func (rs *RiveScript) SortReplies() {
 	// (Re)initialize the sort cache.
 	rs.sorted.topics = map[string][]sortedTriggerEntry{}

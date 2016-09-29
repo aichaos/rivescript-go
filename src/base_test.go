@@ -1,8 +1,11 @@
-package rivescript_test
+package src_test
+
+// NOTE: while these test files live in the 'src' package, they import the
+// public facing API from the root rivescript-go package.
 
 import (
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go/rivescript"
+	rivescript "github.com/aichaos/rivescript-go"
 	"testing"
 )
 
