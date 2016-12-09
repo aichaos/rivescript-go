@@ -5,8 +5,10 @@ package src_test
 
 import (
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
 	"testing"
+
+	"github.com/aichaos/rivescript-go"
+	"github.com/aichaos/rivescript-go/config"
 )
 
 type RiveScriptTest struct {
@@ -16,18 +18,33 @@ type RiveScriptTest struct {
 }
 
 func NewTest(t *testing.T) *RiveScriptTest {
-	tester := new(RiveScriptTest)
-	tester.bot = rivescript.New()
-	tester.t = t
-	tester.username = "soandso"
-	return tester
+	return &RiveScriptTest{
+		bot:      rivescript.New(config.Basic()),
+		t:        t,
+		username: "soandso",
+	}
 }
 
+func NewTestWithConfig(t *testing.T, config *config.Config) *RiveScriptTest {
+	return &RiveScriptTest{
+		bot:      rivescript.New(config),
+		t:        t,
+		username: "soandso",
+	}
+}
+
+// RS exposes the underlying RiveScript API.
+func (rst *RiveScriptTest) RS() *rivescript.RiveScript {
+	return rst.bot
+}
+
+// extend updates the RiveScript source code.
 func (rst RiveScriptTest) extend(code string) {
 	rst.bot.Stream(code)
 	rst.bot.SortReplies()
 }
 
+// reply asserts that a given input gets the expected reply.
 func (rst RiveScriptTest) reply(message string, expected string) {
 	reply := rst.bot.Reply(rst.username, message)
 	if reply != expected {
@@ -35,6 +52,7 @@ func (rst RiveScriptTest) reply(message string, expected string) {
 	}
 }
 
+// uservar asserts a user variable.
 func (rst RiveScriptTest) uservar(name string, expected string) {
 	value, _ := rst.bot.GetUservar(rst.username, name)
 	if value != expected {

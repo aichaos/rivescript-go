@@ -13,7 +13,9 @@ package rivescript
 */
 
 import (
+	"github.com/aichaos/rivescript-go/config"
 	"github.com/aichaos/rivescript-go/macro"
+	"github.com/aichaos/rivescript-go/sessions"
 	"github.com/aichaos/rivescript-go/src"
 )
 
@@ -23,9 +25,9 @@ type RiveScript struct {
 	rs *src.RiveScript
 }
 
-func New() *RiveScript {
+func New(config *config.Config) *RiveScript {
 	bot := new(RiveScript)
-	bot.rs = src.New()
+	bot.rs = src.New(config)
 	return bot
 }
 
@@ -62,12 +64,12 @@ func (self *RiveScript) SetUnicodePunctuation(value string) {
 }
 
 // SetDepth lets you override the recursion depth limit (default 50).
-func (self *RiveScript) SetDepth(value int) {
+func (self *RiveScript) SetDepth(value uint) {
 	self.rs.Depth = value
 }
 
 // GetDepth returns the current recursion depth limit.
-func (self *RiveScript) GetDepth() int {
+func (self *RiveScript) GetDepth() uint {
 	return self.rs.Depth
 }
 
@@ -277,7 +279,7 @@ GetUservars gets all the variables for a user.
 
 This returns a `map[string]string` containing all the user's variables.
 */
-func (self *RiveScript) GetUservars(username string) (map[string]string, error) {
+func (self *RiveScript) GetUservars(username string) (*sessions.UserData, error) {
 	return self.rs.GetUservars(username)
 }
 
@@ -287,7 +289,7 @@ GetAllUservars gets all the variables for all the users.
 This returns a map of username (strings) to `map[string]string` of their
 variables.
 */
-func (self *RiveScript) GetAllUservars() map[string]map[string]string {
+func (self *RiveScript) GetAllUservars() map[string]*sessions.UserData {
 	return self.rs.GetAllUservars()
 }
 
@@ -319,7 +321,7 @@ The `action` can be one of the following:
 * discard: Don't restore the variables, just delete the frozen copy.
 * keep: Keep the frozen copy after restoring.
 */
-func (self *RiveScript) ThawUservars(username, action string) error {
+func (self *RiveScript) ThawUservars(username string, action sessions.ThawAction) error {
 	return self.rs.ThawUservars(username, action)
 }
 

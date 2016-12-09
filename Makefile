@@ -13,6 +13,10 @@ setup:
 run: gopath
 	GOPATH=$(GOPATH) GO15VENDOREXPERIMENT=1 go run cmd/rivescript/main.go eg/brain
 
+# `make debug` to run the rivescript cmd in debug mode
+debug: gopath
+	GOPATH=$(GOPATH) GO15VENDOREXPERIMENT=1 go run cmd/rivescript/main.go -debug eg/brain
+
 # `make fmt` to run gofmt
 fmt:
 	gofmt -w .

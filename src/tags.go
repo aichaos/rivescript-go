@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/aichaos/rivescript-go/sessions"
 )
 
 // formatMessage formats a user's message for safe processing.
@@ -58,7 +60,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 
 	// Optionals.
 	match := re_optional.FindStringSubmatch(pattern)
-	giveup := 0
+	var giveup uint
 	for len(match) > 0 {
 		giveup++
 		if giveup > rs.Depth {
@@ -140,8 +142,8 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 		if len(match) > 0 {
 			name := match[1]
 			rep := "undefined"
-			if _, ok := rs.users[username].data[name]; ok {
-				rep = rs.users[username].data[name]
+			if value, err := rs.sessions.Get(username, name); err == nil {
+				rep = value
 			}
 			pattern = strings.Replace(pattern, fmt.Sprintf(`<get %s>`, name), strings.ToLower(rep), -1)
 		}
@@ -157,11 +159,17 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 			break
 		}
 
-		for i := 1; i <= 9; i++ {
+		for i := 1; i <= sessions.HistorySize; i++ {
 			inputPattern := fmt.Sprintf("<input%d>", i)
 			replyPattern := fmt.Sprintf("<reply%d>", i)
-			pattern = strings.Replace(pattern, inputPattern, rs.users[username].inputHistory[i-1], -1)
-			pattern = strings.Replace(pattern, replyPattern, rs.users[username].replyHistory[i-1], -1)
+			history, err := rs.sessions.GetHistory(username)
+			if err == nil {
+				pattern = strings.Replace(pattern, inputPattern, history.Input[i-1], -1)
+				pattern = strings.Replace(pattern, replyPattern, history.Reply[i-1], -1)
+			} else {
+				pattern = strings.Replace(pattern, inputPattern, "undefined", -1)
+				pattern = strings.Replace(pattern, replyPattern, "undefined", -1)
+			}
 		}
 	}
 
@@ -186,7 +194,7 @@ Params:
 	bst: Array of matched bot stars in a %Previous.
 	step: Recursion depth counter.
 */
-func (rs *RiveScript) processTags(username string, message string, reply string, st []string, bst []string, step int) string {
+func (rs *RiveScript) processTags(username string, message string, reply string, st []string, bst []string, step uint) string {
 	// Prepare the stars and botstars.
 	stars := []string{""}
 	stars = append(stars, st...)
@@ -223,9 +231,12 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	// <input> and <reply>
 	reply = strings.Replace(reply, "<input>", "<input1>", -1)
 	reply = strings.Replace(reply, "<reply>", "<reply1>", -1)
-	for i := 1; i <= 9; i++ {
-		reply = strings.Replace(reply, fmt.Sprintf("<input%d>", i), rs.users[username].inputHistory[i-1], -1)
-		reply = strings.Replace(reply, fmt.Sprintf("<reply%d>", i), rs.users[username].replyHistory[i-1], -1)
+	history, err := rs.sessions.GetHistory(username)
+	if err == nil {
+		for i := 1; i <= sessions.HistorySize; i++ {
+			reply = strings.Replace(reply, fmt.Sprintf("<input%d>", i), history.Input[i-1], -1)
+			reply = strings.Replace(reply, fmt.Sprintf("<reply%d>", i), history.Reply[i-1], -1)
+		}
 	}
 
 	// <id> and escape codes.
@@ -236,7 +247,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 
 	// {random}
 	match := re_random.FindStringSubmatch(reply)
-	giveup := 0
+	var giveup uint
 	for len(match) > 0 {
 		giveup++
 		if giveup > rs.Depth {
@@ -265,8 +276,8 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	formats := []string{"person", "formal", "sentence", "uppercase", "lowercase"}
 	for _, format := range formats {
 		formatRegexp := regexp.MustCompile(fmt.Sprintf(`\{%s\}(.+?)\{/%s\}`, format, format))
-		match := formatRegexp.FindStringSubmatch(reply)
-		giveup := 0
+		match = formatRegexp.FindStringSubmatch(reply)
+		giveup = 0
 		for len(match) > 0 {
 			giveup++
 			if giveup > rs.Depth {
@@ -336,7 +347,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 			parts := strings.Split(data, "=")
 			if len(parts) > 1 {
 				rs.say("Set uservar %s = %s", parts[0], parts[1])
-				rs.users[username].data[parts[0]] = parts[1]
+				rs.sessions.Set(username, map[string]string{parts[0]: parts[1]})
 			} else {
 				rs.warn("Malformed <set> tag: %s", match)
 			}
@@ -347,18 +358,21 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 			strValue := parts[1]
 
 			// Initialize the variable?
-			if _, ok := rs.users[username].data[name]; !ok {
-				rs.users[username].data[name] = "0"
+			var origStr string
+			origStr, err = rs.sessions.Get(username, name)
+			if err != nil {
+				rs.sessions.Set(username, map[string]string{name: "0"})
+				origStr = "0"
 			}
 
 			// Sanity check.
 			value, err := strconv.Atoi(strValue)
 			abort := false
 			if err != nil {
-				insert = fmt.Sprintf("[ERR: Math can't %s non-numeric value %s]", tag, value)
+				insert = fmt.Sprintf("[ERR: Math can't %s non-numeric value %s]", tag, strValue)
 				abort = true
 			}
-			orig, err := strconv.Atoi(rs.users[username].data[name])
+			orig, err := strconv.Atoi(origStr)
 			if err != nil {
 				insert = fmt.Sprintf("[ERR: Math can't %s non-numeric user variable %s]", tag, name)
 				abort = true
@@ -382,14 +396,13 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 
 				if len(insert) == 0 {
 					// Save it to their account.
-					rs.users[username].data[name] = strconv.Itoa(result)
+					rs.sessions.Set(username, map[string]string{name: strconv.Itoa(result)})
 				}
 			}
 		} else if tag == "get" {
 			// <get> user vars
-			if _, ok := rs.users[username].data[data]; ok {
-				insert = rs.users[username].data[data]
-			} else {
+			insert, err = rs.sessions.Get(username, data)
+			if err != nil {
 				insert = "undefined"
 			}
 		} else {
@@ -415,7 +428,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 		}
 
 		name := match[1]
-		rs.users[username].data["topic"] = name
+		rs.sessions.Set(username, map[string]string{"topic": name})
 		reply = strings.Replace(reply, fmt.Sprintf("{topic=%s}", name), "", -1)
 		match = re_topic.FindStringSubmatch(reply)
 	}
@@ -509,7 +522,7 @@ func (rs *RiveScript) substitute(message string, subs map[string]string, sorted 
 	}
 
 	// Convert the placeholders back in.
-	tries := 0
+	var tries uint
 	for strings.Index(message, "\x00") > -1 {
 		tries++
 		if tries > rs.Depth {

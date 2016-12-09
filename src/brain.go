@@ -14,9 +14,7 @@ func (rs *RiveScript) Reply(username string, message string) string {
 	rs.say("Asked to reply to [%s] %s", username, message)
 
 	// Initialize a user profile for this user?
-	if _, ok := rs.users[username]; !ok {
-		rs.users[username] = newUser()
-	}
+	rs.sessions.Init(username)
 
 	// Store the current user's ID.
 	rs.currentUser = username
@@ -42,11 +40,7 @@ func (rs *RiveScript) Reply(username string, message string) string {
 	}
 
 	// Save their message history.
-	user := rs.users[username]
-	user.inputHistory = user.inputHistory[:len(user.inputHistory)-1]                       // Pop
-	user.inputHistory = append([]string{strings.TrimSpace(message)}, user.inputHistory...) // Unshift
-	user.replyHistory = user.replyHistory[:len(user.replyHistory)-1]                       // Pop
-	user.replyHistory = append([]string{strings.TrimSpace(reply)}, user.replyHistory...)   // Unshift
+	rs.sessions.AddHistory(username, message, reply)
 
 	// Unset the current user's ID.
 	rs.currentUser = ""
@@ -64,7 +58,7 @@ Parameters
 	isBegin: Whether this reply is for the "BEGIN Block" context or not.
 	step: Recursion depth counter.
 */
-func (rs *RiveScript) getReply(username string, message string, isBegin bool, step int) string {
+func (rs *RiveScript) getReply(username string, message string, isBegin bool, step uint) string {
 	// Needed to sort replies?
 	if len(rs.sorted.topics) == 0 {
 		rs.warn("You forgot to call SortReplies()!")
@@ -72,7 +66,10 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 	}
 
 	// Collect data on this user.
-	topic := rs.users[username].data["topic"]
+	topic, err := rs.sessions.Get(username, "topic")
+	if err != nil {
+		topic = "random"
+	}
 	stars := []string{}
 	thatStars := []string{} // For %Previous
 	reply := ""
@@ -80,7 +77,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 	// Avoid letting them fall into a missing topic.
 	if _, ok := rs.topics[topic]; !ok {
 		rs.warn("User %s was in an empty topic named '%s'", username, topic)
-		rs.users[username].data["topic"] = "random"
+		rs.sessions.Set(username, map[string]string{"topic": "random"})
 		topic = "random"
 	}
 
@@ -125,7 +122,8 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 				rs.say("There's a %%Previous in this topic!")
 
 				// Get the bot's last reply to the user.
-				lastReply := rs.users[username].replyHistory[0]
+				history, _ := rs.sessions.GetHistory(username)
+				lastReply := history.Reply[0]
 
 				// Format the bot's reply the same way as the human's.
 				lastReply = rs.formatMessage(lastReply, true)
@@ -235,7 +233,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 	}
 
 	// Store what trigger they matched on.
-	rs.users[username].lastMatch = matchedTrigger
+	rs.sessions.SetLastMatch(username, matchedTrigger)
 
 	// Did we match?
 	if foundMatch {
@@ -360,7 +358,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 
 		// Topic setter
 		match := re_topic.FindStringSubmatch(reply)
-		giveup := 0
+		var giveup uint
 		for len(match) > 0 {
 			giveup++
 			if giveup > rs.Depth {
@@ -368,7 +366,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 				break
 			}
 			name := match[1]
-			rs.users[username].data["topic"] = name
+			rs.sessions.Set(username, map[string]string{"topic": name})
 			reply = strings.Replace(reply, fmt.Sprintf("{topic=%s}", name), "", -1)
 			match = re_topic.FindStringSubmatch(reply)
 		}
@@ -384,7 +382,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 			}
 			name := match[1]
 			value := match[2]
-			rs.users[username].data[name] = value
+			rs.sessions.Set(username, map[string]string{name: value})
 			reply = strings.Replace(reply, fmt.Sprintf("<set %s=%s>", name, value), "", -1)
 			match = re_set.FindStringSubmatch(reply)
 		}

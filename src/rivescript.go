@@ -19,16 +19,21 @@ You've been warned. Here be dragons.
 package src
 
 import (
+	"regexp"
+	"sync"
+
+	"github.com/aichaos/rivescript-go/config"
 	"github.com/aichaos/rivescript-go/macro"
 	"github.com/aichaos/rivescript-go/parser"
-	"regexp"
+	"github.com/aichaos/rivescript-go/sessions"
+	"github.com/aichaos/rivescript-go/sessions/memory"
 )
 
 type RiveScript struct {
 	// Parameters
 	Debug              bool // Debug mode
 	Strict             bool // Strictly enforce RiveScript syntax
-	Depth              int  // Max depth for recursion
+	Depth              uint // Max depth for recursion
 	UTF8               bool // Support UTF-8 RiveScript code
 	UnicodePunctuation *regexp.Regexp
 
@@ -36,13 +41,13 @@ type RiveScript struct {
 	parser *parser.Parser
 
 	// Internal data structures
+	cLock       sync.Mutex                      // Lock for config variables.
 	global      map[string]string               // 'global' variables
 	var_        map[string]string               // 'var' bot variables
 	sub         map[string]string               // 'sub' substitutions
 	person      map[string]string               // 'person' substitutions
 	array       map[string][]string             // 'array'
-	users       map[string]*userData            // user variables
-	freeze      map[string]*userData            // frozen user variables
+	sessions    sessions.SessionManager         // user variable session manager
 	includes    map[string]map[string]bool      // included topics
 	inherits    map[string]map[string]bool      // inherited topics
 	objlangs    map[string]string               // object macro languages
@@ -60,12 +65,25 @@ type RiveScript struct {
  * Constructor and Debug Methods                                              *
  ******************************************************************************/
 
-func New() *RiveScript {
+func New(config *config.Config) *RiveScript {
 	rs := new(RiveScript)
-	rs.Debug = false
-	rs.Strict = true
-	rs.Depth = 50
-	rs.UTF8 = false
+	if config != nil {
+		if config.SessionManager == nil {
+			rs.say("No SessionManager config: using default MemoryStore")
+			config.SessionManager = memory.New()
+		}
+
+		if config.Depth <= 0 {
+			rs.say("No depth config: using default 50")
+			config.Depth = 50
+		}
+
+		rs.Debug = config.Debug
+		rs.Strict = config.Strict
+		rs.UTF8 = config.UTF8
+		rs.Depth = config.Depth
+		rs.sessions = config.SessionManager
+	}
 	rs.UnicodePunctuation = regexp.MustCompile(`[.,!?;:]`)
 
 	// Initialize helpers.
@@ -82,8 +100,6 @@ func New() *RiveScript {
 	rs.sub = map[string]string{}
 	rs.person = map[string]string{}
 	rs.array = map[string][]string{}
-	rs.users = map[string]*userData{}
-	rs.freeze = map[string]*userData{}
 	rs.includes = map[string]map[string]bool{}
 	rs.inherits = map[string]map[string]bool{}
 	rs.objlangs = map[string]string{}
@@ -93,8 +109,6 @@ func New() *RiveScript {
 	rs.thats = map[string]*thatTopic{}
 	rs.sorted = new(sortBuffer)
 
-	// Initialize Golang handler.
-	//rs.handlers["go"] = new(golangHandler)
 	return rs
 }
 
@@ -110,7 +124,7 @@ func (rs *RiveScript) SetStrict(value bool) {
 	rs.Strict = value
 }
 
-func (rs *RiveScript) SetDepth(value int) {
+func (rs *RiveScript) SetDepth(value uint) {
 	rs.Depth = value
 }
 
