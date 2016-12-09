@@ -76,11 +76,12 @@ package main
 
 import (
     "fmt"
-    rivescript "github.com/aichaos/rivescript-go"
+    "github.com/aichaos/rivescript-go"
+    "github.com/aichaos/rivescript-go/config"
 )
 
 func main() {
-    bot := rivescript.New()
+    bot := rivescript.New(config.Basic())
 
     // Load a directory full of RiveScript documents (.rive files)
     err := bot.LoadDirectory("eg/brain")
@@ -101,6 +102,35 @@ func main() {
     reply := bot.Reply("local-user", "Hello, bot!")
     fmt.Printf("The bot says: %s", reply)
 }
+```
+
+## Configuration
+
+The constructor takes an optional `Config` struct. Here is a full example with
+all the supported options. You only need to provide keys that are different to
+the defaults.
+
+```go
+bot := rs.New(&config.Config{
+    Debug: false,                 // Debug mode, off by default
+    Strict: false,                // No strict syntax checking
+    UTF8: false,                  // No UTF-8 support enabled by default
+    Depth: 50,                    // Becomes default 50 if Depth is <= 0
+    SessionManager: memory.New(), // Default in-memory session manager
+})
+```
+
+For convenience, the `config` package provides two config templates:
+
+```go
+// Basic has all the defaults, plus Strict=true
+bot := rs.New(config.Basic())
+
+// UTF8 has all of Basic's settings, plus UTF8=true
+bot := rs.New(config.UTF8())
+
+// You can also provide a nil configuration, which defaults to Basic()
+bot := rs.New(nil)
 ```
 
 ## Object Macros

@@ -65,25 +65,28 @@ type RiveScript struct {
  * Constructor and Debug Methods                                              *
  ******************************************************************************/
 
-func New(config *config.Config) *RiveScript {
+func New(cfg *config.Config) *RiveScript {
 	rs := new(RiveScript)
-	if config != nil {
-		if config.SessionManager == nil {
-			rs.say("No SessionManager config: using default MemoryStore")
-			config.SessionManager = memory.New()
-		}
-
-		if config.Depth <= 0 {
-			rs.say("No depth config: using default 50")
-			config.Depth = 50
-		}
-
-		rs.Debug = config.Debug
-		rs.Strict = config.Strict
-		rs.UTF8 = config.UTF8
-		rs.Depth = config.Depth
-		rs.sessions = config.SessionManager
+	if cfg == nil {
+		cfg = config.Basic()
 	}
+
+	if cfg.SessionManager == nil {
+		rs.say("No SessionManager config: using default MemoryStore")
+		cfg.SessionManager = memory.New()
+	}
+
+	if cfg.Depth <= 0 {
+		rs.say("No depth config: using default 50")
+		cfg.Depth = 50
+	}
+
+	rs.Debug = cfg.Debug
+	rs.Strict = cfg.Strict
+	rs.UTF8 = cfg.UTF8
+	rs.Depth = cfg.Depth
+	rs.sessions = cfg.SessionManager
+
 	rs.UnicodePunctuation = regexp.MustCompile(`[.,!?;:]`)
 
 	// Initialize helpers.

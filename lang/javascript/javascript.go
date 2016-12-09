@@ -49,9 +49,10 @@ package javascript
 
 import (
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
-	"github.com/robertkrimen/otto"
 	"strings"
+
+	"github.com/aichaos/rivescript-go"
+	"github.com/robertkrimen/otto"
 )
 
 type JavaScriptHandler struct {
