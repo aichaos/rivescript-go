@@ -13,7 +13,7 @@ Usage is simple. In your Golang code:
 	)
 
 	func main() {
-		bot := rivescript.New()
+		bot := rivescript.New(nil)
 		jsHandler := javascript.New(bot)
 		bot.SetHandler("javascript", jsHandler)
 

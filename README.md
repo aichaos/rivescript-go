@@ -166,8 +166,7 @@ string literal to the `RiveScript.SetUnicodePunctuation` function. Example:
 
 ```go
 // Make a new bot with UTF-8 mode enabled.
-bot := rivescript.New()
-bot.SetUTF8(true)
+bot := rivescript.New(config.UTF8())
 
 // Override the punctuation characters that get stripped from the
 // user's message.
@@ -251,6 +250,9 @@ The distributable directory contains only the following types of files:
   code and returning an "abstract syntax tree."
 * [rivescript-go/macro](./macro) - Contains an interface for creating your own
   object macro handlers for foreign programming languages.
+* [rivescript-go/sessions](./sessions) - Contains the interface for user
+  variable session managers as well as the default in-memory manager and the
+  `NullStore` for testing.
 
 ## License
 

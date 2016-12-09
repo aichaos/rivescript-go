@@ -56,8 +56,7 @@ set being `/[.,!?;:]/g`. This can be overridden by providing a new regexp
 string literal to the `RiveScript.SetUnicodePunctuation` function. Example:
 
 	// Make a new bot with UTF-8 mode enabled.
-	bot := rivescript.New()
-	bot.SetUTF8(true)
+	bot := rivescript.New(config.UTF8())
 
 	// Override the punctuation characters that get stripped from the
 	// user's message.
