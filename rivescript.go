@@ -13,13 +13,16 @@ package rivescript
 */
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/aichaos/rivescript-go/config"
 	"github.com/aichaos/rivescript-go/macro"
 	"github.com/aichaos/rivescript-go/sessions"
 	"github.com/aichaos/rivescript-go/src"
 )
 
-const VERSION string = "0.0.3"
+const VERSION string = "0.1.0"
 
 type RiveScript struct {
 	rs *rivescript.RiveScript
@@ -31,6 +34,10 @@ func New(config *config.Config) *RiveScript {
 	return bot
 }
 
+func deprecated(name string) {
+	fmt.Fprintf(os.Stderr, "Use of 'rivescript.%s()' is deprecated\n", name)
+}
+
 // Version returns the RiveScript library version.
 func (self *RiveScript) Version() string {
 	return VERSION
@@ -38,21 +45,25 @@ func (self *RiveScript) Version() string {
 
 // SetDebug enables or disable debug mode.
 func (self *RiveScript) SetDebug(value bool) {
+	deprecated("SetDebug")
 	self.rs.Debug = value
 }
 
 // GetDebug tells you the current status of the debug mode.
 func (self *RiveScript) GetDebug() bool {
+	deprecated("GetDebug")
 	return self.rs.Debug
 }
 
 // SetUTF8 enables or disabled UTF-8 mode.
 func (self *RiveScript) SetUTF8(value bool) {
+	deprecated("SetUTF8")
 	self.rs.UTF8 = value
 }
 
 // GetUTF8 returns the current status of UTF-8 mode.
 func (self *RiveScript) GetUTF8() bool {
+	deprecated("GetUTF8")
 	return self.rs.UTF8
 }
 
@@ -65,21 +76,25 @@ func (self *RiveScript) SetUnicodePunctuation(value string) {
 
 // SetDepth lets you override the recursion depth limit (default 50).
 func (self *RiveScript) SetDepth(value uint) {
+	deprecated("SetDepth")
 	self.rs.Depth = value
 }
 
 // GetDepth returns the current recursion depth limit.
 func (self *RiveScript) GetDepth() uint {
+	deprecated("GetDepth")
 	return self.rs.Depth
 }
 
 // SetStrict enables strict syntax checking when parsing RiveScript code.
 func (self *RiveScript) SetStrict(value bool) {
+	deprecated("SetStrict")
 	self.rs.Strict = value
 }
 
 // GetStrict returns the strict syntax check setting.
 func (self *RiveScript) GetStrict() bool {
+	deprecated("GetStrict")
 	return self.rs.Strict
 }
 
