@@ -2,13 +2,15 @@ package rivescript_test
 
 import (
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
-	js "github.com/aichaos/rivescript-go/lang/javascript"
+
+	"github.com/aichaos/rivescript-go"
+	"github.com/aichaos/rivescript-go/config"
+	"github.com/aichaos/rivescript-go/lang/javascript"
 	rss "github.com/aichaos/rivescript-go/src"
 )
 
 func ExampleRiveScript() {
-	bot := rivescript.New()
+	bot := rivescript.New(config.Basic())
 
 	// Load a directory full of RiveScript documents (.rive files)
 	bot.LoadDirectory("eg/brain")
@@ -27,11 +29,10 @@ func ExampleRiveScript() {
 func ExampleRiveScript_javascript() {
 	// Example for configuring the JavaScript object macro handler via Otto.
 
-	bot := rivescript.New()
+	bot := rivescript.New(config.Basic())
 
 	// Create the JS handler.
-	jsHandler := js.New(bot)
-	bot.SetHandler("javascript", jsHandler)
+	bot.SetHandler("javascript", javascript.New(bot))
 
 	// Now we can use object macros written in JS!
 	bot.Stream(`
@@ -66,7 +67,7 @@ func ExampleRiveScript_subroutine() {
 	// Example for defining a Go function as an object macro.
 	// import rss "github.com/aichaos/rivescript-go/src"
 
-	bot := rivescript.New()
+	bot := rivescript.New(config.Basic())
 
 	// Define an object macro named `setname`
 	bot.SetSubroutine("setname", func(rs *rss.RiveScript, args []string) string {

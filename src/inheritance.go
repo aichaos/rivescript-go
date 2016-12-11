@@ -1,4 +1,4 @@
-package src
+package rivescript
 
 import "fmt"
 
@@ -51,7 +51,7 @@ The inherited option is true if this is a recursive call, from a topic that
 inherits other topics. This forces the {inherits} tag to be added to the
 triggers. This only applies when the topic 'includes' another topic.
 */
-func (rs *RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopic, thats map[string]*thatTopic, depth int, inheritance int, inherited bool) []sortedTriggerEntry {
+func (rs *RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopic, thats map[string]*thatTopic, depth uint, inheritance int, inherited bool) []sortedTriggerEntry {
 	// Break if we're in too deep.
 	if depth > rs.Depth {
 		rs.warn("Deep recursion while scanning topic inheritance!")
@@ -141,7 +141,7 @@ getTopicTree returns an array of every topic related to a topic (all the
 topics it inherits or includes, plus all the topics included or inherited
 by those topics, and so on). The array includes the original topic, too.
 */
-func (rs *RiveScript) getTopicTree(topic string, depth int) []string {
+func (rs *RiveScript) getTopicTree(topic string, depth uint) []string {
 	// Break if we're in too deep.
 	if depth > rs.Depth {
 		rs.warn("Deep recursion while scanning topic tree!")

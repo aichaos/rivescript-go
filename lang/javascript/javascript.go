@@ -13,7 +13,7 @@ Usage is simple. In your Golang code:
 	)
 
 	func main() {
-		bot := rivescript.New()
+		bot := rivescript.New(nil)
 		jsHandler := javascript.New(bot)
 		bot.SetHandler("javascript", jsHandler)
 
@@ -49,9 +49,10 @@ package javascript
 
 import (
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
-	"github.com/robertkrimen/otto"
 	"strings"
+
+	"github.com/aichaos/rivescript-go"
+	"github.com/robertkrimen/otto"
 )
 
 type JavaScriptHandler struct {

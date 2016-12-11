@@ -1,4 +1,4 @@
-package src
+package rivescript
 
 // Miscellaneous utility functions.
 

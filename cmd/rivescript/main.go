@@ -20,10 +20,12 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	rivescript "github.com/aichaos/rivescript-go"
-	js "github.com/aichaos/rivescript-go/lang/javascript"
 	"os"
 	"strings"
+
+	"github.com/aichaos/rivescript-go"
+	"github.com/aichaos/rivescript-go/config"
+	"github.com/aichaos/rivescript-go/lang/javascript"
 )
 
 func main() {
@@ -31,7 +33,8 @@ func main() {
 	version := flag.Bool("version", false, "Show the version number and exit.")
 	debug := flag.Bool("debug", false, "Enable debug mode.")
 	utf8 := flag.Bool("utf8", false, "Enable UTF-8 mode.")
-	depth := flag.Int("depth", 50, "Recursion depth limit (default 50)")
+	depth := flag.Uint("depth", 50, "Recursion depth limit (default 50)")
+	nostrict := flag.Bool("nostrict", false, "Disable strict syntax checking")
 	flag.Parse()
 	args := flag.Args()
 
@@ -48,14 +51,15 @@ func main() {
 	root := args[0]
 
 	// Initialize the bot.
-	bot := rivescript.New()
-	bot.SetDebug(*debug)
-	bot.SetUTF8(*utf8)
-	bot.SetDepth(*depth)
+	bot := rivescript.New(&config.Config{
+		Debug:  *debug,
+		Strict: !*nostrict,
+		Depth:  *depth,
+		UTF8:   *utf8,
+	})
 
 	// JavaScript object macro handler.
-	jsHandler := js.New(bot)
-	bot.SetHandler("javascript", jsHandler)
+	bot.SetHandler("javascript", javascript.New(bot))
 
 	// Load the target directory.
 	err := bot.LoadDirectory(root)
