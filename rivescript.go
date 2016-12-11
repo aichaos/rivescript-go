@@ -22,12 +22,12 @@ import (
 const VERSION string = "0.0.3"
 
 type RiveScript struct {
-	rs *src.RiveScript
+	rs *rivescript.RiveScript
 }
 
 func New(config *config.Config) *RiveScript {
 	bot := new(RiveScript)
-	bot.rs = src.New(config)
+	bot.rs = rivescript.New(config)
 	return bot
 }
 
@@ -169,7 +169,7 @@ Parameters
 	name: The name of your subroutine for the `<call>` tag in RiveScript.
 	fn: A function with a prototype `func(*RiveScript, []string) string`
 */
-func (self *RiveScript) SetSubroutine(name string, fn src.Subroutine) {
+func (self *RiveScript) SetSubroutine(name string, fn rivescript.Subroutine) {
 	self.rs.SetSubroutine(name, fn)
 }
 

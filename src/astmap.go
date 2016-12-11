@@ -1,4 +1,4 @@
-package src
+package rivescript
 
 /*
 For my own sanity while programming the code, these structs mirror the data

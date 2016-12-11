@@ -16,7 +16,7 @@ this package lest you be tempted to use it (don't).
 
 You've been warned. Here be dragons.
 */
-package src
+package rivescript
 
 import (
 	"regexp"

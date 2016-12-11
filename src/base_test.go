@@ -1,4 +1,4 @@
-package src_test
+package rivescript_test
 
 // NOTE: while these test files live in the 'src' package, they import the
 // public facing API from the root rivescript-go package.

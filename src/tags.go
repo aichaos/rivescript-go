@@ -1,4 +1,4 @@
-package src
+package rivescript
 
 // Tag processing functions.
 
@@ -366,13 +366,15 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 			}
 
 			// Sanity check.
-			value, err := strconv.Atoi(strValue)
+			var value int
+			value, err = strconv.Atoi(strValue)
 			abort := false
 			if err != nil {
 				insert = fmt.Sprintf("[ERR: Math can't %s non-numeric value %s]", tag, strValue)
 				abort = true
 			}
-			orig, err := strconv.Atoi(origStr)
+			var orig int
+			orig, err = strconv.Atoi(origStr)
 			if err != nil {
 				insert = fmt.Sprintf("[ERR: Math can't %s non-numeric user variable %s]", tag, name)
 				abort = true

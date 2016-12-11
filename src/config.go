@@ -1,4 +1,4 @@
-package src
+package rivescript
 
 // Public API Configuration Methods
 
