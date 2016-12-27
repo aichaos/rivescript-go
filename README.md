@@ -1,5 +1,6 @@
 # RiveScript-Go
 
+[![Gitter](https://badges.gitter.im/aichaos/rivescript-go.svg)](https://gitter.im/aichaos/rivescript-go?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.org/aichaos/rivescript-go.svg?branch=master)](https://travis-ci.org/aichaos/rivescript-go)
 
 ## Introduction
