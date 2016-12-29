@@ -1,6 +1,14 @@
 language: go
 go:
+  - "1.7"
   - "1.6"
   - "1.5"
   - tip
 script: make test
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/f037a5b8287e8b7561fe
+    on_success: always  # options: [always|never|change] default: always
+    on_failure: always  # options: [always|never|change] default: always
+    on_start: never     # options: [always|never|change] default: always
