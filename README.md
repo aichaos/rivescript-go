@@ -45,6 +45,9 @@ To test drive RiveScript in your web browser, try the
 * RiveScript Stand-alone Interpreter: <http://godoc.org/github.com/aichaos/rivescript-go/cmd/rivescript>
 * JavaScript Object Macros: <http://godoc.org/github.com/aichaos/rivescript-go/lang/javascript>
 
+Also check out the [**RiveScript Community Wiki**](https://github.com/aichaos/rivescript/wiki)
+for common design patterns and tips & tricks for RiveScript.
+
 ## Installation
 
 `go get github.com/aichaos/rivescript-go`
