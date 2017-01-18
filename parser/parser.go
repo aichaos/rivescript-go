@@ -10,9 +10,10 @@ package parser
 import (
 	"errors"
 	"fmt"
-	"github.com/aichaos/rivescript-go/ast"
 	"strconv"
 	"strings"
+
+	"github.com/aichaos/rivescript-go/ast"
 )
 
 const RS_VERSION float64 = 2.0
@@ -174,12 +175,14 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 			continue
 		}
 		cmd := string(line[0])
-		line = strings.TrimSpace(line[1:])
+		line = line[1:]
 
 		// Ignore in-line comments if there's a space before and after the "//"
 		if strings.Index(line, " // ") > -1 {
 			line = strings.Split(line, " // ")[0]
 		}
+
+		line = strings.TrimSpace(line)
 
 		// TODO: check syntax
 

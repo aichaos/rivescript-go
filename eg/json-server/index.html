@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RiveScript json-server</title>
+    <style type="text/css">
+        body {
+            background-color: #FFFFFF;
+            font-family: Helvetica,Arial,Verdana,sans-serif;
+            font-size: medium;
+            color: #000000;
+        }
+        pre, code {
+            font-family: "Ubuntu Mono", "DejaVu Sans Mono", "Lucida Console", "Monospace", monospace;
+            font-size: medium;
+        }
+        pre {
+            display: block;
+            border: 1px dashed #000000;
+            padding: 12px;
+        }
+        pre#output {
+            display: none;
+            clear: both;
+            margin: 20px 0;
+        }
+        .row {
+            clear: both;
+            padding: 4px 0;
+        }
+        .row label {
+            width: 150px;
+            float: left;
+            text-align: right;
+            padding-right: 4px;
+        }
+        .row input {
+            float: left;
+        }
+        button {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>RiveScript json-server</h1>
+
+Usage via <code>curl</code>:
+
+<pre>curl -X POST -H 'Content-Type: application/json' \
+    -d '{"username": "soandso", "message": "Hello, bot"}' \
+    http://localhost:8000/reply</pre>
+
+<h2>In-Browser Demo</h2>
+
+<form id="demo" action="/" method="POST">
+    <div class="row">
+        <label for="username">Username:</label> <input type="text" id="username" size="40" value="demo" placeholder="Required.">
+    </div>
+    <div class="row">
+        <label for="message">Message:</label> <input type="text" id="message" size="40" placeholder="Press Return to send." autocomplete="off">
+    </div>
+    <button type="submit"></button>
+</form>
+
+<br>
+<pre id="output"></pre>
+
+<script type="text/javascript">
+function ready(fn) {
+    if (document.readyState !== "loading") {
+        fn();
+    } else {
+        document.addEventListener('DOMContentLoaded', fn);
+    }
+}
+
+ready(function() {
+    var $form     = document.getElementById("demo");
+    var $username = document.getElementById("username");
+    var $message  = document.getElementById("message");
+    var $output   = document.getElementById("output");
+
+    var write = function(message) {
+        $output.innerText += message+"\n";
+    };
+
+    $form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        $output.style.display = "block";
+        $output.innerText = "";
+        var message = $message.value;
+        $message.value = "";
+
+        var req = new XMLHttpRequest();
+        req.open("POST", "/reply");
+        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+
+        req.onload = req.onerror = function() {
+            var data;
+            try {
+                data = JSON.parse(req.responseText);
+            } catch(e) {
+                write("Error: " + e);
+            }
+
+            if (req.status !== 200) {
+                write("Error: got non-200 status code (" + req.status + ")");
+            }
+
+            if (data.status === "error") {
+                write("API Error: " + data.error);
+            } else {
+                write("Reply: " + data.reply);
+                write("Vars: " + JSON.stringify(data.vars, null, 2));
+            }
+        }
+
+        req.send(JSON.stringify({
+            username: $username.value,
+            message: message,
+        }));
+    });
+})
+</script>
+
+</body>
+</html>
