@@ -31,7 +31,7 @@ type astRoot struct {
 
 type astBegin struct {
 	global map[string]string
-	var_   map[string]string
+	vars   map[string]string
 	sub    map[string]string
 	person map[string]string
 	array  map[string][]string // Map of string (names) to arrays-of-strings
@@ -39,8 +39,6 @@ type astBegin struct {
 
 type astTopic struct {
 	triggers []*astTrigger
-	includes map[string]bool
-	inherits map[string]bool
 }
 
 type astTrigger struct {

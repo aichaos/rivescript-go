@@ -31,6 +31,8 @@ var commonSessionTest = `
 
 func TestNullSession(t *testing.T) {
 	bot := NewTestWithConfig(t, false, false, null.New())
+	bot.bot.Quiet = true // Suppress warnings
+
 	bot.extend(commonSessionTest)
 	bot.reply("My name is Aiden", "Nice to meet you, undefined.")
 	bot.reply("Who am I?", "Aren't you undefined?")
@@ -63,16 +65,16 @@ func TestFreezeThaw(t *testing.T) {
 	bot.reply("My name is Aiden", "Nice to meet you, Aiden.")
 	bot.reply("Who am I?", "Aren't you Aiden?")
 
-	bot.RS().FreezeUservars(bot.username)
+	bot.bot.FreezeUservars(bot.username)
 	bot.reply("My name is Bob", "Nice to meet you, Bob.")
 	bot.reply("Who am I?", "Aren't you Bob?")
 
-	bot.RS().ThawUservars(bot.username, sessions.Thaw)
+	bot.bot.ThawUservars(bot.username, sessions.Thaw)
 	bot.reply("Who am I?", "Aren't you Aiden?")
-	bot.RS().FreezeUservars(bot.username)
+	bot.bot.FreezeUservars(bot.username)
 
 	bot.reply("My name is Bob", "Nice to meet you, Bob.")
 	bot.reply("Who am I?", "Aren't you Bob?")
-	bot.RS().ThawUservars(bot.username, sessions.Discard)
+	bot.bot.ThawUservars(bot.username, sessions.Discard)
 	bot.reply("Who am I?", "Aren't you Bob?")
 }

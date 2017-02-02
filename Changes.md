@@ -31,6 +31,8 @@ This update focuses on bug fixes and code reorganization.
       bot = rivescript.New(rivescript.WithUTF8())
   }
   ```
+* `Reply()`, `SortReplies()` and `CurrentUser()` now return an `error` value
+  in addition to what they already returned.
 
 ### Changes
 
@@ -40,6 +42,7 @@ This update focuses on bug fixes and code reorganization.
 * Handle module configuration at the root package instead of in the `src`
   package. This enabled getting rid of the `rivescript/config` package and
   making the public API more sane.
+* Code cleanup via `go vet`
 * Add more documentation and examples to the Go doc.
 * Fix `@Redirects` not working sometimes when tags like `<bot>` insert capital
   letters (bug #1)
@@ -49,6 +52,15 @@ This update focuses on bug fixes and code reorganization.
   the optional makes its wildcard non-capturing (bug #15)
 * Fix the `<star>` tag handling to support star numbers greater than `<star9>`:
   you can use as many star numbers as will be captured by your trigger (bug #16)
+* Fix a probable bug within inheritance/includes: some parts of the code were
+  looking in one location for them, another in the other, so they probably
+  didn't work perfectly before.
+* Fix `RemoveHandler()` to make it remove all known object macros that used that
+  handler, which protects against a possible null pointer exception.
+* Fix `LoadDirectory()` to return an error when doesn't find any RiveScript
+  source files to load, which helps protect against the common error that you
+  gave it the wrong directory.
+* New unit tests: object macros
 
 ## v0.1.0 - Dec 11, 2016
 

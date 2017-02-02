@@ -20,7 +20,7 @@ func wordCount(pattern string, all bool) int {
 	wc := 0
 	for _, word := range words {
 		if len(word) > 0 {
-			wc += 1
+			wc++
 		}
 	}
 
@@ -29,7 +29,7 @@ func wordCount(pattern string, all bool) int {
 
 // stripNasties strips special characters out of a string.
 func stripNasties(pattern string) string {
-	return re_nasties.ReplaceAllString(pattern, "")
+	return reNasties.ReplaceAllString(pattern, "")
 }
 
 // isAtomic tells you whether a string is atomic or not.
@@ -55,9 +55,8 @@ func stringFormat(format string, text string) string {
 	} else if format == "sentence" {
 		if len(text) > 1 {
 			return strings.ToUpper(text[0:1]) + strings.ToLower(text[1:])
-		} else {
-			return strings.ToUpper(text)
 		}
+		return strings.ToUpper(text)
 	} else if format == "formal" {
 		words := strings.Split(text, " ")
 		result := []string{}
@@ -132,7 +131,7 @@ func regReplace(input string, pattern string, result string) string {
 	match := reg.FindStringSubmatch(input)
 	input = reg.ReplaceAllString(input, result)
 	if len(match) > 1 {
-		for i, _ := range match[1:] {
+		for i := range match[1:] {
 			input = strings.Replace(input, fmt.Sprintf("$%d", i), match[i], -1)
 		}
 	}

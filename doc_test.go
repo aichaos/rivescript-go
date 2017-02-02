@@ -40,7 +40,7 @@ func Example() {
 	bot.SortReplies()
 
 	// Get a reply.
-	reply := bot.Reply("local-user", "Hello, bot!")
+	reply, _ := bot.Reply("local-user", "Hello, bot!")
 	fmt.Printf("The bot says: %s", reply)
 }
 
@@ -61,7 +61,7 @@ func ExampleRiveScript_utf8() {
 	// Without UTF-8 mode enabled, the user's message "comment ça va" would
 	// have the ç symbol removed; but in UTF-8 mode it's preserved and can
 	// match the trigger we defined.
-	reply := bot.Reply("local-user", "Comment ça va?")
+	reply, _ := bot.Reply("local-user", "Comment ça va?")
 	fmt.Println(reply) // "ça va bien."
 }
 
@@ -97,7 +97,7 @@ func ExampleRiveScript_javascript() {
 	`)
 	bot.SortReplies()
 
-	reply := bot.Reply("local-user", "Add 5 and 7")
+	reply, _ := bot.Reply("local-user", "Add 5 and 7")
 	fmt.Printf("Bot: %s\n", reply)
 }
 
@@ -123,7 +123,7 @@ func ExampleRiveScript_subroutine() {
 	`)
 	bot.SortReplies()
 
-	_ = bot.Reply("local-user", "my name is bob")
-	reply := bot.Reply("local-user", "What is my name?")
+	bot.Reply("local-user", "my name is bob")
+	reply, _ := bot.Reply("local-user", "What is my name?")
 	fmt.Printf("Bot: %s\n", reply)
 }

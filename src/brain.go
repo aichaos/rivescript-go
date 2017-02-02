@@ -8,35 +8,46 @@ import (
 	"strings"
 )
 
-// Brain logic for RiveScript
-
-func (rs *RiveScript) Reply(username, message string) string {
+// Reply gets a reply from the bot.
+func (rs *RiveScript) Reply(username, message string) (string, error) {
 	rs.say("Asked to reply to [%s] %s", username, message)
+	var err error
 
 	// Initialize a user profile for this user?
 	rs.sessions.Init(username)
 
 	// Store the current user's ID.
+	rs.inReplyContext = true
 	rs.currentUser = username
 
 	// Format their message.
 	message = rs.formatMessage(message, false)
-	reply := ""
+	var reply string
 
 	// If the BEGIN block exists, consult it first.
 	if _, ok := rs.topics["__begin__"]; ok {
-		begin := rs.getReply(username, "request", true, 0)
+		var begin string
+		begin, err = rs.getReply(username, "request", true, 0)
+		if err != nil {
+			return "", err
+		}
 
 		// OK to continue?
 		if strings.Index(begin, "{ok}") > -1 {
-			reply = rs.getReply(username, message, false, 0)
+			reply, err = rs.getReply(username, message, false, 0)
+			if err != nil {
+				return "", err
+			}
 			begin = strings.NewReplacer("{ok}", reply).Replace(begin)
 		}
 
 		reply = begin
 		reply = rs.processTags(username, message, reply, []string{}, []string{}, 0)
 	} else {
-		reply = rs.getReply(username, message, false, 0)
+		reply, err = rs.getReply(username, message, false, 0)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	// Save their message history.
@@ -44,8 +55,9 @@ func (rs *RiveScript) Reply(username, message string) string {
 
 	// Unset the current user's ID.
 	rs.currentUser = ""
+	rs.inReplyContext = false
 
-	return reply
+	return reply, nil
 }
 
 /*
@@ -58,11 +70,11 @@ Parameters
 	isBegin: Whether this reply is for the "BEGIN Block" context or not.
 	step: Recursion depth counter.
 */
-func (rs *RiveScript) getReply(username string, message string, isBegin bool, step uint) string {
+func (rs *RiveScript) getReply(username string, message string, isBegin bool, step uint) (string, error) {
 	// Needed to sort replies?
 	if len(rs.sorted.topics) == 0 {
 		rs.warn("You forgot to call SortReplies()!")
-		return "ERR: Replies Not Sorted"
+		return "", ErrRepliesNotSorted
 	}
 
 	// Collect data on this user.
@@ -72,7 +84,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 	}
 	stars := []string{}
 	thatStars := []string{} // For %Previous
-	reply := ""
+	var reply string
 
 	// Avoid letting them fall into a missing topic.
 	if _, ok := rs.topics[topic]; !ok {
@@ -83,7 +95,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 
 	// Avoid deep recursion.
 	if step > rs.Depth {
-		return "ERR: Deep Recursion Detected"
+		return "", ErrDeepRecursion
 	}
 
 	// Are we in the BEGIN block?
@@ -95,7 +107,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 	if _, ok := rs.topics[topic]; !ok {
 		// This was handled before, which would mean topic=random and it doesn't
 		// exist. Serious issue!
-		return "ERR: No default topic 'random' was found!"
+		return "", ErrNoDefaultTopic
 	}
 
 	// Create a pointer for the matched data when we find it.
@@ -109,7 +121,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 	// be the same as it was the first time, resulting in an infinite loop!
 	if step == 0 {
 		allTopics := []string{topic}
-		if len(rs.topics[topic].includes) > 0 || len(rs.topics[topic].inherits) > 0 {
+		if len(rs.includes[topic]) > 0 || len(rs.inherits[topic]) > 0 {
 			// Get ALL the topics!
 			allTopics = rs.getTopicTree(topic, 0)
 		}
@@ -145,7 +157,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 						// Collect the bot stars.
 						thatStars = []string{}
 						if len(match) > 1 {
-							for i, _ := range match[1:] {
+							for i := range match[1:] {
 								thatStars = append(thatStars, match[i+1])
 							}
 						}
@@ -169,7 +181,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 
 								// Get the user's message stars.
 								if len(match) > 1 {
-									for i, _ := range match[1:] {
+									for i := range match[1:] {
 										stars = append(stars, match[i+1])
 									}
 								}
@@ -212,7 +224,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 
 					// Collect the stars.
 					if len(match) > 1 {
-						for i, _ := range match[1:] {
+						for i := range match[1:] {
 							stars = append(stars, match[i+1])
 						}
 					}
@@ -245,7 +257,10 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 				redirect = rs.processTags(username, message, redirect, stars, thatStars, 0)
 				redirect = strings.ToLower(redirect)
 				rs.say("Pretend user said: %s", redirect)
-				reply = rs.getReply(username, redirect, isBegin, step+1)
+				reply, err = rs.getReply(username, redirect, isBegin, step+1)
+				if err != nil {
+					return "", err
+				}
 				break
 			}
 
@@ -253,7 +268,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 			for _, row := range matched.condition {
 				halves := strings.Split(row, "=>")
 				if len(halves) == 2 {
-					condition := re_condition.FindStringSubmatch(strings.TrimSpace(halves[0]))
+					condition := reCondition.FindStringSubmatch(strings.TrimSpace(halves[0]))
 					if len(condition) > 0 {
 						left := strings.TrimSpace(condition[1])
 						eq := condition[2]
@@ -266,10 +281,10 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 
 						// Defaults?
 						if len(left) == 0 {
-							left = "undefined"
+							left = UNDEFINED
 						}
 						if len(right) == 0 {
-							right = "undefined"
+							right = UNDEFINED
 						}
 
 						rs.say("Check if %s %s %s", left, eq, right)
@@ -319,10 +334,9 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 			// Process weights in the replies.
 			bucket := []string{}
 			for _, rep := range matched.reply {
-				weight := 1
-				match := re_weight.FindStringSubmatch(rep)
+				match := reWeight.FindStringSubmatch(rep)
 				if len(match) > 0 {
-					weight, _ = strconv.Atoi(match[1])
+					weight, _ := strconv.Atoi(match[1])
 					if weight <= 0 {
 						rs.warn("Can't have a weight <= 0!")
 						weight = 1
@@ -346,9 +360,9 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 
 	// Still no reply?? Give up with the fallback error replies.
 	if !foundMatch {
-		reply = "ERR: No Reply Matched"
+		return "", ErrNoTriggerMatched
 	} else if len(reply) == 0 {
-		reply = "ERR: No Reply Found"
+		return "", ErrNoReplyFound
 	}
 
 	rs.say("Reply: %s", reply)
@@ -358,7 +372,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 		// The BEGIN block can set {topic} and user vars.
 
 		// Topic setter
-		match := re_topic.FindStringSubmatch(reply)
+		match := reTopic.FindStringSubmatch(reply)
 		var giveup uint
 		for len(match) > 0 {
 			giveup++
@@ -369,11 +383,11 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 			name := match[1]
 			rs.sessions.Set(username, map[string]string{"topic": name})
 			reply = strings.Replace(reply, fmt.Sprintf("{topic=%s}", name), "", -1)
-			match = re_topic.FindStringSubmatch(reply)
+			match = reTopic.FindStringSubmatch(reply)
 		}
 
 		// Set user vars
-		match = re_set.FindStringSubmatch(reply)
+		match = reSet.FindStringSubmatch(reply)
 		giveup = 0
 		for len(match) > 0 {
 			giveup++
@@ -385,11 +399,11 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 			value := match[2]
 			rs.sessions.Set(username, map[string]string{name: value})
 			reply = strings.Replace(reply, fmt.Sprintf("<set %s=%s>", name, value), "", -1)
-			match = re_set.FindStringSubmatch(reply)
+			match = reSet.FindStringSubmatch(reply)
 		}
 	} else {
 		reply = rs.processTags(username, message, reply, stars, thatStars, 0)
 	}
 
-	return reply
+	return reply, nil
 }

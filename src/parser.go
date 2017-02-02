@@ -12,28 +12,28 @@ func (rs *RiveScript) parse(path string, lines []string) error {
 
 	// Get all of the "begin" type variables
 	for k, v := range AST.Begin.Global {
-		if v == "<undef>" {
+		if v == UNDEFTAG {
 			delete(rs.global, k)
 		} else {
 			rs.global[k] = v
 		}
 	}
 	for k, v := range AST.Begin.Var {
-		if v == "<undef>" {
-			delete(rs.var_, k)
+		if v == UNDEFTAG {
+			delete(rs.vars, k)
 		} else {
-			rs.var_[k] = v
+			rs.vars[k] = v
 		}
 	}
 	for k, v := range AST.Begin.Sub {
-		if v == "<undef>" {
+		if v == UNDEFTAG {
 			delete(rs.sub, k)
 		} else {
 			rs.sub[k] = v
 		}
 	}
 	for k, v := range AST.Begin.Person {
-		if v == "<undef>" {
+		if v == UNDEFTAG {
 			delete(rs.person, k)
 		} else {
 			rs.person[k] = v
@@ -54,10 +54,10 @@ func (rs *RiveScript) parse(path string, lines []string) error {
 		}
 
 		// Merge in the topic inclusions/inherits.
-		for included, _ := range data.Includes {
+		for included := range data.Includes {
 			rs.includes[topic][included] = true
 		}
-		for inherited, _ := range data.Inherits {
+		for inherited := range data.Inherits {
 			rs.inherits[topic][inherited] = true
 		}
 

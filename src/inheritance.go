@@ -104,7 +104,7 @@ func (rs *RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopi
 
 	// Does this topic include others?
 	if _, ok := rs.includes[topic]; ok {
-		for includes, _ := range rs.includes[topic] {
+		for includes := range rs.includes[topic] {
 			rs.say("Topic %s includes %s", topic, includes)
 			triggers = append(triggers, rs._getTopicTriggers(includes, topics, thats, depth+1, inheritance+1, false)...)
 		}
@@ -112,7 +112,7 @@ func (rs *RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopi
 
 	// Does this topic inherit others?
 	if _, ok := rs.inherits[topic]; ok {
-		for inherits, _ := range rs.inherits[topic] {
+		for inherits := range rs.inherits[topic] {
 			rs.say("Topic %s inherits %s", topic, inherits)
 			triggers = append(triggers, rs._getTopicTriggers(inherits, topics, thats, depth+1, inheritance+1, true)...)
 		}
@@ -151,10 +151,10 @@ func (rs *RiveScript) getTopicTree(topic string, depth uint) []string {
 	// Collect an array of all topics.
 	topics := []string{topic}
 
-	for includes, _ := range rs.topics[topic].includes {
+	for includes := range rs.includes[topic] {
 		topics = append(topics, rs.getTopicTree(includes, depth+1)...)
 	}
-	for inherits, _ := range rs.topics[topic].inherits {
+	for inherits := range rs.inherits[topic] {
 		topics = append(topics, rs.getTopicTree(inherits, depth+1)...)
 	}
 

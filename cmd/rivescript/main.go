@@ -97,8 +97,12 @@ Type a message to the bot and press Return to send it.
 		} else if strings.Index(text, "/quit") == 0 {
 			os.Exit(0)
 		} else {
-			reply := bot.Reply("localuser", text)
-			fmt.Printf("Bot> %s\n", reply)
+			reply, err := bot.Reply("localuser", text)
+			if err != nil {
+				fmt.Printf("Error> %s\n", err)
+			} else {
+				fmt.Printf("Bot> %s\n", reply)
+			}
 		}
 	}
 }

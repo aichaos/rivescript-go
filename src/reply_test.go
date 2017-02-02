@@ -78,6 +78,12 @@ func TestRedirects(t *testing.T) {
 		+ hi there
 		- {@hello}
 
+		// Infinite recursion between these two.
+		+ one
+		@ two
+		+ two
+		@ one
+
 		// Variables can throw off redirects with their capitalizations,
 		// so make sure redirects handle this properly.
 		! var master = Kirsle
@@ -94,6 +100,8 @@ func TestRedirects(t *testing.T) {
 
 	bot.reply("my name is Kirsle", "That's my botmaster's name too.")
 	bot.reply("call me kirsle", "That's my botmaster's name too.")
+
+	bot.replyError("one", ErrDeepRecursion)
 }
 
 func TestConditionals(t *testing.T) {
@@ -114,8 +122,8 @@ func TestConditionals(t *testing.T) {
 		* <get master> == true => Yes.
 		- No.
 	`)
-	age_q := "What can I do?"
-	bot.reply(age_q, "I don't know.")
+	ageQ := "What can I do?"
+	bot.reply(ageQ, "I don't know.")
 
 	ages := map[string]string{
 		"16": "Not much of anything.",
@@ -128,7 +136,7 @@ func TestConditionals(t *testing.T) {
 	}
 	for age, expect := range ages {
 		bot.reply(fmt.Sprintf("I am %s years old.", age), "OK.")
-		bot.reply(age_q, expect)
+		bot.reply(ageQ, expect)
 	}
 
 	bot.reply("Am I your master?", "No.")

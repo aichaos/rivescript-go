@@ -28,12 +28,14 @@ import (
 	"github.com/aichaos/rivescript-go/sessions/memory"
 )
 
+// RiveScript is the bot instance.
 type RiveScript struct {
 	// Parameters
 	Debug              bool // Debug mode
 	Strict             bool // Strictly enforce RiveScript syntax
 	Depth              uint // Max depth for recursion
 	UTF8               bool // Support UTF-8 RiveScript code
+	Quiet              bool // Suppress all warnings from being emitted
 	UnicodePunctuation *regexp.Regexp
 
 	// Internal helpers
@@ -42,7 +44,7 @@ type RiveScript struct {
 	// Internal data structures
 	cLock       sync.Mutex                      // Lock for config variables.
 	global      map[string]string               // 'global' variables
-	var_        map[string]string               // 'var' bot variables
+	vars        map[string]string               // 'var' bot variables
 	sub         map[string]string               // 'sub' substitutions
 	person      map[string]string               // 'person' substitutions
 	array       map[string][]string             // 'array'
@@ -57,13 +59,15 @@ type RiveScript struct {
 	sorted      *sortBuffer                     // Sorted data from SortReplies()
 
 	// State information.
-	currentUser string
+	inReplyContext bool
+	currentUser    string
 }
 
 /******************************************************************************
  * Constructor and Debug Methods                                              *
  ******************************************************************************/
 
+// New creates a new RiveScript instance with the default configuration.
 func New() *RiveScript {
 	rs := new(RiveScript)
 
@@ -84,7 +88,7 @@ func New() *RiveScript {
 
 	// Initialize all the data structures.
 	rs.global = map[string]string{}
-	rs.var_ = map[string]string{}
+	rs.vars = map[string]string{}
 	rs.sub = map[string]string{}
 	rs.person = map[string]string{}
 	rs.array = map[string][]string{}
@@ -111,22 +115,7 @@ func (rs *RiveScript) Configure(debug, strict, utf8 bool, depth uint,
 	rs.sessions = sessions
 }
 
-func (rs *RiveScript) SetDebug(value bool) {
-	rs.Debug = value
-}
-
-func (rs *RiveScript) SetUTF8(value bool) {
-	rs.UTF8 = value
-}
-
-func (rs *RiveScript) SetStrict(value bool) {
-	rs.Strict = value
-}
-
-func (rs *RiveScript) SetDepth(value uint) {
-	rs.Depth = value
-}
-
+// SetUnicodePunctuation allows for overriding the regexp for punctuation.
 func (rs *RiveScript) SetUnicodePunctuation(value string) {
 	rs.UnicodePunctuation = regexp.MustCompile(value)
 }

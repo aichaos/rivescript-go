@@ -66,5 +66,5 @@ func TestPunctuation(t *testing.T) {
 
 	bot.bot.SetUnicodePunctuation(`xxx`)
 	bot.reply("Hello bot", "Hello human!")
-	bot.reply("Hello, bot!", "ERR: No Reply Matched")
+	bot.replyError("Hello, bot!", ErrNoTriggerMatched)
 }

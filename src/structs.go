@@ -2,6 +2,15 @@ package rivescript
 
 // Miscellaneous structures
 
+// Forms of undefined.
+const (
+	// UNDEFINED is the text "undefined", the default text for variable getters.
+	UNDEFINED = "undefined"
+
+	// UNDEFTAG is the "<undef>" tag for unsetting variables in !Definitions.
+	UNDEFTAG = "<undef>"
+)
+
 // Subroutine is a Golang function type for defining an object macro in Go.
 // TODO: get this exportable to third party devs somehow
 type Subroutine func(*RiveScript, []string) string

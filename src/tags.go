@@ -23,12 +23,12 @@ func (rs *RiveScript) formatMessage(msg string, botReply bool) string {
 	// In UTF-8 mode, only strip metacharacters and HTML brackets (to protect
 	// against obvious XSS attacks).
 	if rs.UTF8 {
-		msg = re_meta.ReplaceAllString(msg, "")
+		msg = reMeta.ReplaceAllString(msg, "")
 		msg = rs.UnicodePunctuation.ReplaceAllString(msg, "")
 
 		// For the bot's reply, also strip common punctuation.
 		if botReply {
-			msg = re_symbols.ReplaceAllString(msg, "")
+			msg = reSymbols.ReplaceAllString(msg, "")
 		}
 	} else {
 		// For everything else, strip all non-alphanumerics.
@@ -42,14 +42,14 @@ func (rs *RiveScript) formatMessage(msg string, botReply bool) string {
 func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 	// If the trigger is simply '*' then the * needs to become (.*?)
 	// to match the blank string too.
-	pattern = re_zerowidthstar.ReplaceAllString(pattern, "<zerowidthstar>")
+	pattern = reZerowidthstar.ReplaceAllString(pattern, "<zerowidthstar>")
 
 	// Simple replacements.
 	pattern = strings.Replace(pattern, "*", `(.+?)`, -1)
 	pattern = strings.Replace(pattern, "#", `(\d+?)`, -1)
 	pattern = strings.Replace(pattern, "_", `(\w+?)`, -1)
-	pattern = re_weight.ReplaceAllString(pattern, "")   // Remove {weight} tags
-	pattern = re_inherits.ReplaceAllString(pattern, "") // Remove {inherits} tags
+	pattern = reWeight.ReplaceAllString(pattern, "")   // Remove {weight} tags
+	pattern = reInherits.ReplaceAllString(pattern, "") // Remove {inherits} tags
 	pattern = strings.Replace(pattern, "<zerowidthstar>", `(.*?)`, -1)
 
 	// UTF-8 mode special characters.
@@ -59,7 +59,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 	}
 
 	// Optionals.
-	match := re_optional.FindStringSubmatch(pattern)
+	match := reOptional.FindStringSubmatch(pattern)
 	var giveup uint
 	for len(match) > 0 {
 		giveup++
@@ -83,7 +83,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 		pattern = regReplace(pattern,
 			fmt.Sprintf(`\s*\[%s\]\s*`, quotemeta(match[1])),
 			fmt.Sprintf(`(?:%s|(?:\s|\b)+)`, pipes))
-		match = re_optional.FindStringSubmatch(pattern)
+		match = reOptional.FindStringSubmatch(pattern)
 	}
 
 	// _ wildcards can't match numbers! Quick note on why I did it this way:
@@ -100,7 +100,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 			break
 		}
 
-		match := re_array.FindStringSubmatch(pattern)
+		match := reArray.FindStringSubmatch(pattern)
 		if len(match) > 0 {
 			name := match[1]
 			rep := ""
@@ -119,12 +119,12 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 			break
 		}
 
-		match := re_botvar.FindStringSubmatch(pattern)
+		match := reBotvars.FindStringSubmatch(pattern)
 		if len(match) > 0 {
 			name := match[1]
 			rep := ""
-			if _, ok := rs.var_[name]; ok {
-				rep = stripNasties(rs.var_[name])
+			if _, ok := rs.vars[name]; ok {
+				rep = stripNasties(rs.vars[name])
 			}
 			pattern = strings.Replace(pattern, fmt.Sprintf(`<bot %s>`, name), strings.ToLower(rep), -1)
 		}
@@ -138,14 +138,16 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 			break
 		}
 
-		match := re_uservar.FindStringSubmatch(pattern)
+		match := reUservars.FindStringSubmatch(pattern)
 		if len(match) > 0 {
 			name := match[1]
-			rep := "undefined"
-			if value, err := rs.sessions.Get(username, name); err == nil {
-				rep = value
+
+			value, err := rs.sessions.Get(username, name)
+			if err != nil {
+				value = UNDEFINED
 			}
-			pattern = strings.Replace(pattern, fmt.Sprintf(`<get %s>`, name), strings.ToLower(rep), -1)
+
+			pattern = strings.Replace(pattern, fmt.Sprintf(`<get %s>`, name), strings.ToLower(value), -1)
 		}
 	}
 
@@ -167,8 +169,8 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 				pattern = strings.Replace(pattern, inputPattern, history.Input[i-1], -1)
 				pattern = strings.Replace(pattern, replyPattern, history.Reply[i-1], -1)
 			} else {
-				pattern = strings.Replace(pattern, inputPattern, "undefined", -1)
-				pattern = strings.Replace(pattern, replyPattern, "undefined", -1)
+				pattern = strings.Replace(pattern, inputPattern, UNDEFINED, -1)
+				pattern = strings.Replace(pattern, replyPattern, UNDEFINED, -1)
 			}
 		}
 	}
@@ -201,10 +203,10 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	botstars := []string{""}
 	botstars = append(botstars, bst...)
 	if len(stars) == 1 {
-		stars = append(stars, "undefined")
+		stars = append(stars, UNDEFINED)
 	}
 	if len(botstars) == 1 {
-		botstars = append(botstars, "undefined")
+		botstars = append(botstars, UNDEFINED)
 	}
 
 	// Tag shortcuts.
@@ -216,7 +218,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	reply = strings.Replace(reply, "<lowercase>", "{lowercase}<star>{/lowercase}", -1)
 
 	// Weight and star tags.
-	reply = re_weight.ReplaceAllString(reply, "") // Remove {weight} tags.
+	reply = reWeight.ReplaceAllString(reply, "") // Remove {weight} tags.
 	reply = strings.Replace(reply, "<star>", stars[1], -1)
 	reply = strings.Replace(reply, "<botstar>", botstars[1], -1)
 	for i := 1; i < len(stars); i++ {
@@ -244,7 +246,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	reply = strings.Replace(reply, `\#`, "#", -1)
 
 	// {random}
-	match := re_random.FindStringSubmatch(reply)
+	match := reRandom.FindStringSubmatch(reply)
 	var giveup uint
 	for len(match) > 0 {
 		giveup++
@@ -253,7 +255,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 			break
 		}
 
-		random := []string{}
+		var random []string
 		text := match[1]
 		if strings.Index(text, "|") > -1 {
 			random = strings.Split(text, "|")
@@ -267,7 +269,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 		}
 
 		reply = strings.Replace(reply, fmt.Sprintf("{random}%s{/random}", text), output, -1)
-		match = re_random.FindStringSubmatch(reply)
+		match = reRandom.FindStringSubmatch(reply)
 	}
 
 	// Person substitution and string formatting.
@@ -284,7 +286,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 			}
 
 			content := match[1]
-			replace := ""
+			var replace string
 			if format == "person" {
 				replace = rs.substitute(content, rs.person, rs.sorted.person)
 			} else {
@@ -303,7 +305,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	reply = strings.Replace(reply, "</call>", "{/__call__}", -1)
 	for {
 		// Look for tags that don't contain any other tags inside them.
-		matcher := re_anytag.FindStringSubmatch(reply)
+		matcher := reAnytag.FindStringSubmatch(reply)
 		if len(matcher) == 0 {
 			break // No tags left!
 		}
@@ -322,7 +324,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 			// <bot> and <env> work similarly
 			var target map[string]string
 			if tag == "bot" {
-				target = rs.var_
+				target = rs.vars
 			} else {
 				target = rs.global
 			}
@@ -337,7 +339,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 				if _, ok := target[data]; ok {
 					insert = target[data]
 				} else {
-					insert = "undefined"
+					insert = UNDEFINED
 				}
 			}
 		} else if tag == "set" {
@@ -403,7 +405,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 			// <get> user vars
 			insert, err = rs.sessions.Get(username, data)
 			if err != nil {
-				insert = "undefined"
+				insert = UNDEFINED
 			}
 		} else {
 			// Unrecognized tag; preserve it.
@@ -418,7 +420,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	reply = strings.Replace(reply, "\x01", ">", -1)
 
 	// Topic setter.
-	match = re_topic.FindStringSubmatch(reply)
+	match = reTopic.FindStringSubmatch(reply)
 	giveup = 0
 	for len(match) > 0 {
 		giveup++
@@ -430,11 +432,11 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 		name := match[1]
 		rs.sessions.Set(username, map[string]string{"topic": name})
 		reply = strings.Replace(reply, fmt.Sprintf("{topic=%s}", name), "", -1)
-		match = re_topic.FindStringSubmatch(reply)
+		match = reTopic.FindStringSubmatch(reply)
 	}
 
 	// Inline redirector.
-	match = re_redirect.FindStringSubmatch(reply)
+	match = reRedirect.FindStringSubmatch(reply)
 	giveup = 0
 	for len(match) > 0 {
 		giveup++
@@ -445,15 +447,18 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 
 		target := match[1]
 		rs.say("Inline redirection to: %s", target)
-		subreply := rs.getReply(username, strings.TrimSpace(target), false, step+1)
+		subreply, err := rs.getReply(username, strings.TrimSpace(target), false, step+1)
+		if err != nil {
+			subreply = err.Error()
+		}
 		reply = strings.Replace(reply, fmt.Sprintf("{@%s}", target), subreply, -1)
-		match = re_redirect.FindStringSubmatch(reply)
+		match = reRedirect.FindStringSubmatch(reply)
 	}
 
 	// Object caller.
 	reply = strings.Replace(reply, "{__call__}", "<call>", -1)
 	reply = strings.Replace(reply, "{/__call__}", "</call>", -1)
-	match = re_call.FindStringSubmatch(reply)
+	match = reCall.FindStringSubmatch(reply)
 	giveup = 0
 	for len(match) > 0 {
 		giveup++
@@ -483,7 +488,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 		}
 
 		reply = strings.Replace(reply, fmt.Sprintf("<call>%s</call>", match[1]), output, -1)
-		match = re_call.FindStringSubmatch(reply)
+		match = reCall.FindStringSubmatch(reply)
 	}
 
 	return reply
@@ -528,7 +533,7 @@ func (rs *RiveScript) substitute(message string, subs map[string]string, sorted 
 			break
 		}
 
-		match := re_placeholder.FindStringSubmatch(message)
+		match := rePlaceholder.FindStringSubmatch(message)
 		if len(match) > 0 {
 			i, _ := strconv.Atoi(match[1])
 			result := ph[i]

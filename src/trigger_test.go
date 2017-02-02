@@ -83,15 +83,15 @@ func TestAlternativesAndOptionals(t *testing.T) {
 	bot.reply("aa", "Matched.")
 	bot.reply("bb", "Matched.")
 	bot.reply("aa bogus", "Matched.")
-	bot.reply("aabogus", "ERR: No Reply Matched")
-	bot.reply("bogus", "ERR: No Reply Matched")
+	bot.replyError("aabogus", ErrNoTriggerMatched)
+	bot.replyError("bogus", ErrNoTriggerMatched)
 
 	bot.reply("hi Aiden", "Matched.")
 	bot.reply("hi bot how are you?", "Matched.")
 	bot.reply("yo computer what time is it?", "Matched.")
-	bot.reply("yoghurt is yummy", "ERR: No Reply Matched")
-	bot.reply("hide and seek is fun", "ERR: No Reply Matched")
-	bot.reply("hip hip hurrah", "ERR: No Reply Matched")
+	bot.replyError("yoghurt is yummy", ErrNoTriggerMatched)
+	bot.replyError("hide and seek is fun", ErrNoTriggerMatched)
+	bot.replyError("hip hip hurrah", ErrNoTriggerMatched)
 }
 
 func TestTriggerArrays(t *testing.T) {
@@ -111,12 +111,12 @@ func TestTriggerArrays(t *testing.T) {
 	`)
 	bot.reply("What color is my red shirt?", "Your shirt is red.")
 	bot.reply("What color is my blue car?", "Your car is blue.")
-	bot.reply("What color is my pink house?", "ERR: No Reply Matched")
+	bot.replyError("What color is my pink house?", ErrNoTriggerMatched)
 	bot.reply("What color is my dark blue jacket?", "Your jacket is dark blue.")
 	bot.reply("What color was Napoleoan's white horse?", "It was white.")
 	bot.reply("What color was my red shirt?", "It was red.")
 	bot.reply("I have a blue car.", "Tell me more about your car.")
-	bot.reply("I have a cyan car.", "ERR: No Reply Matched")
+	bot.replyError("I have a cyan car.", ErrNoTriggerMatched)
 }
 
 func TestWeightedTriggers(t *testing.T) {

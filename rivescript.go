@@ -120,9 +120,13 @@ SortReplies sorts the reply structures in memory for optimal matching.
 After you have finished loading your RiveScript code, call this method to
 populate the various sort buffers. This is absolutely necessary for reply
 matching to work efficiently!
+
+If the bot has loaded no topics, or if it ends up with no sorted triggers at
+the end, it will return an error saying such. This usually means the bot didn't
+load any RiveScript code, for example because it looked in the wrong directory.
 */
-func (rs *RiveScript) SortReplies() {
-	rs.rs.SortReplies()
+func (rs *RiveScript) SortReplies() error {
+	return rs.rs.SortReplies()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,6 +147,9 @@ func (rs *RiveScript) SetHandler(name string, handler macro.MacroInterface) {
 
 /*
 RemoveHandler removes an object macro language handler.
+
+If the handler has already loaded object macros, they will be deleted from
+the bot along with the handler.
 
 Parameters
 
@@ -328,7 +335,7 @@ This is only useful from within an object macro, to get the ID of the user who
 invoked the macro. This value is set at the beginning of `Reply()` and unset
 at the end, so this function will return empty outside of a reply context.
 */
-func (rs *RiveScript) CurrentUser() string {
+func (rs *RiveScript) CurrentUser() (string, error) {
 	return rs.rs.CurrentUser()
 }
 
@@ -344,8 +351,9 @@ Parameters
 	username: The name of the user requesting a reply.
 	message: The user's message.
 */
-func (rs *RiveScript) Reply(username, message string) string {
-	return rs.rs.Reply(username, message)
+func (rs *RiveScript) Reply(username, message string) (string, error) {
+	reply, err := rs.rs.Reply(username, message)
+	return reply, err
 }
 
 ////////////////////////////////////////////////////////////////////////////////
