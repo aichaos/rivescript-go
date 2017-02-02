@@ -22,7 +22,6 @@ import (
 	"regexp"
 	"sync"
 
-	"github.com/aichaos/rivescript-go/config"
 	"github.com/aichaos/rivescript-go/macro"
 	"github.com/aichaos/rivescript-go/parser"
 	"github.com/aichaos/rivescript-go/sessions"
@@ -65,27 +64,13 @@ type RiveScript struct {
  * Constructor and Debug Methods                                              *
  ******************************************************************************/
 
-func New(cfg *config.Config) *RiveScript {
+func New() *RiveScript {
 	rs := new(RiveScript)
-	if cfg == nil {
-		cfg = config.Basic()
-	}
 
-	if cfg.SessionManager == nil {
-		rs.say("No SessionManager config: using default MemoryStore")
-		cfg.SessionManager = memory.New()
-	}
-
-	if cfg.Depth <= 0 {
-		rs.say("No depth config: using default 50")
-		cfg.Depth = 50
-	}
-
-	rs.Debug = cfg.Debug
-	rs.Strict = cfg.Strict
-	rs.UTF8 = cfg.UTF8
-	rs.Depth = cfg.Depth
-	rs.sessions = cfg.SessionManager
+	// Set the default config objects that don't have good zero-values.
+	rs.Strict = true
+	rs.Depth = 50
+	rs.sessions = memory.New()
 
 	rs.UnicodePunctuation = regexp.MustCompile(`[.,!?;:]`)
 
@@ -113,6 +98,17 @@ func New(cfg *config.Config) *RiveScript {
 	rs.sorted = new(sortBuffer)
 
 	return rs
+}
+
+// Configure is a convenience function for the public API to set all of its
+// settings at once.
+func (rs *RiveScript) Configure(debug, strict, utf8 bool, depth uint,
+	sessions sessions.SessionManager) {
+	rs.Debug = debug
+	rs.Strict = strict
+	rs.UTF8 = utf8
+	rs.Depth = depth
+	rs.sessions = sessions
 }
 
 func (rs *RiveScript) SetDebug(value bool) {

@@ -78,7 +78,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 		pipes := strings.Join(opts, "|")
 		pipes = strings.Replace(pipes, `(.+?)`, `(?:.+?)`, -1)
 		pipes = strings.Replace(pipes, `(\d+?)`, `(?:\d+?)`, -1)
-		pipes = strings.Replace(pipes, `(\d+?)`, `(?:\w+?)`, -1)
+		pipes = strings.Replace(pipes, `(\w+?)`, `(?:\w+?)`, -1)
 
 		pattern = regReplace(pattern,
 			fmt.Sprintf(`\s*\[%s\]\s*`, quotemeta(match[1])),
@@ -219,13 +219,11 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	reply = re_weight.ReplaceAllString(reply, "") // Remove {weight} tags.
 	reply = strings.Replace(reply, "<star>", stars[1], -1)
 	reply = strings.Replace(reply, "<botstar>", botstars[1], -1)
-	for i := 1; i <= 9; i++ {
-		if len(stars) > i {
-			reply = strings.Replace(reply, fmt.Sprintf("<star%d>", i), stars[i], -1)
-		}
-		if len(botstars) > i {
-			reply = strings.Replace(reply, fmt.Sprintf("<botstar%d>", i), botstars[i], -1)
-		}
+	for i := 1; i < len(stars); i++ {
+		reply = strings.Replace(reply, fmt.Sprintf("<star%d>", i), stars[i], -1)
+	}
+	for i := 1; i < len(botstars); i++ {
+		reply = strings.Replace(reply, fmt.Sprintf("<botstar%d>", i), botstars[i], -1)
 	}
 
 	// <input> and <reply>
@@ -515,12 +513,10 @@ func (rs *RiveScript) substitute(message string, subs map[string]string, sorted 
 		pi++
 
 		// Run substitutions.
-		// fmt.Printf("BEFORE: %s\n", message)
 		message = regReplace(message, fmt.Sprintf(`^%s$`, qm), placeholder)
 		message = regReplace(message, fmt.Sprintf(`^%s(\W+)`, qm), fmt.Sprintf("%s$1", placeholder))
 		message = regReplace(message, fmt.Sprintf(`(\W+)%s(\W+)`, qm), fmt.Sprintf("$1%s$2", placeholder))
 		message = regReplace(message, fmt.Sprintf(`(\W+)%s$`, qm), fmt.Sprintf("$1%s", placeholder))
-		// fmt.Printf("AFTER: %s\n", message)
 	}
 
 	// Convert the placeholders back in.

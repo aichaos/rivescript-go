@@ -2,6 +2,54 @@
 
 This documents the history of significant changes to `rivescript-go`.
 
+## v0.1.1 - TBD
+
+This update focuses on bug fixes and code reorganization.
+
+### API Breaking Changes
+
+* `rivescript.New()` and the `Config` struct have been refactored. `Config`
+  now comes from the `rivescript` package directly rather than needing to
+  import from `rivescript/config`.
+
+  For your code, this means you can remove the `aichaos/rivescript-go/config`
+  import and change the `config.Config` name to `rivescript.Config`:
+
+  ```go
+  import "github.com/aichaos/rivescript-go"
+
+  func main() {
+      // Example defining the struct to override defaults.
+      bot := rivescript.New(&rivescript.Config{Debug: true})
+
+      // For the old `config.Basic()` that provided default settings, just
+      // pass in a nil Config object.
+      bot = rivescript.New(nil)
+
+      // For the old `config.UTF8()` helper function that provided a Config with
+      // UTF-8 mode enabled, instead call rivescript.WithUTF8()
+      bot = rivescript.New(rivescript.WithUTF8())
+  }
+  ```
+
+### Changes
+
+* Separate the unit tests into multiple files and put them in the `rivescript`
+  package instead of `rivescript_test`; this enables test code coverage
+  reporting (we're at 72.1% coverage!)
+* Handle module configuration at the root package instead of in the `src`
+  package. This enabled getting rid of the `rivescript/config` package and
+  making the public API more sane.
+* Add more documentation and examples to the Go doc.
+* Fix `@Redirects` not working sometimes when tags like `<bot>` insert capital
+  letters (bug #1)
+* Fix an incorrect regexp that makes wildcards inside of optionals, like `[_]`,
+  not matchable in `<star>` tags. For example, with `+ my favorite [_] is *`
+  and a message of "my favorite color is red", `<star1>` would be "red" because
+  the optional makes its wildcard non-capturing (bug #15)
+* Fix the `<star>` tag handling to support star numbers greater than `<star9>`:
+  you can use as many star numbers as will be captured by your trigger (bug #16)
+
 ## v0.1.0 - Dec 11, 2016
 
 This update changes some function prototypes in the API which breaks backward

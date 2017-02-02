@@ -10,7 +10,7 @@ import (
 
 // Brain logic for RiveScript
 
-func (rs *RiveScript) Reply(username string, message string) string {
+func (rs *RiveScript) Reply(username, message string) string {
 	rs.say("Asked to reply to [%s] %s", username, message)
 
 	// Initialize a user profile for this user?
@@ -243,6 +243,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 				rs.say("Redirecting us to %s", matched.redirect)
 				redirect := matched.redirect
 				redirect = rs.processTags(username, message, redirect, stars, thatStars, 0)
+				redirect = strings.ToLower(redirect)
 				rs.say("Pretend user said: %s", redirect)
 				reply = rs.getReply(username, redirect, isBegin, step+1)
 				break

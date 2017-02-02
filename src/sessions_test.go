@@ -1,11 +1,9 @@
-package rivescript_test
+package rivescript
 
 import (
 	"testing"
 
-	"github.com/aichaos/rivescript-go/config"
 	"github.com/aichaos/rivescript-go/sessions"
-	"github.com/aichaos/rivescript-go/sessions/memory"
 	"github.com/aichaos/rivescript-go/sessions/null"
 )
 
@@ -32,9 +30,7 @@ var commonSessionTest = `
 `
 
 func TestNullSession(t *testing.T) {
-	bot := NewTestWithConfig(t, &config.Config{
-		SessionManager: null.New(),
-	})
+	bot := NewTestWithConfig(t, false, false, null.New())
 	bot.extend(commonSessionTest)
 	bot.reply("My name is Aiden", "Nice to meet you, undefined.")
 	bot.reply("Who am I?", "Aren't you undefined?")
@@ -45,9 +41,7 @@ func TestNullSession(t *testing.T) {
 }
 
 func TestMemorySession(t *testing.T) {
-	bot := NewTestWithConfig(t, &config.Config{
-		SessionManager: memory.New(),
-	})
+	bot := NewTest(t)
 	bot.extend(commonSessionTest)
 	bot.reply("My name is Aiden", "Nice to meet you, Aiden.")
 	bot.reply("What did I just say?", "You just said: my name is aiden")

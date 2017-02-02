@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	"github.com/aichaos/rivescript-go"
-	"github.com/aichaos/rivescript-go/config"
 	"github.com/aichaos/rivescript-go/lang/javascript"
 )
 
@@ -51,7 +50,7 @@ func main() {
 	root := args[0]
 
 	// Initialize the bot.
-	bot := rivescript.New(&config.Config{
+	bot := rivescript.New(&rivescript.Config{
 		Debug:  *debug,
 		Strict: !*nostrict,
 		Depth:  *depth,
