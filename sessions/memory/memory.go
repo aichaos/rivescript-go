@@ -68,7 +68,7 @@ func (s *MemoryStore) SetLastMatch(username, trigger string) {
 }
 
 // Get a user variable.
-func (s *MemoryStore) Get(username string, name string) (string, error) {
+func (s *MemoryStore) Get(username, name string) (string, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -78,7 +78,7 @@ func (s *MemoryStore) Get(username string, name string) (string, error) {
 
 	value, ok := s.users[username].Variables[name]
 	if !ok {
-		return "undefined", fmt.Errorf(`variable "%s" for user "%s" not set`, name, username)
+		return "", fmt.Errorf(`variable "%s" for user "%s" not set`, name, username)
 	}
 
 	return value, nil

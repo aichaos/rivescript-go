@@ -15,7 +15,9 @@ func (rs *RiveScript) say(message string, a ...interface{}) {
 
 // warn prints a warning message for non-fatal errors
 func (rs *RiveScript) warn(message string, a ...interface{}) {
-	fmt.Printf("[WARN] "+message+"\n", a...)
+	if !rs.Quiet {
+		fmt.Printf("[WARN] "+message+"\n", a...)
+	}
 }
 
 // warnSyntax is like warn but takes a filename and line number.
@@ -24,6 +26,7 @@ func (rs *RiveScript) warnSyntax(message string, filename string, lineno int, a 
 	rs.warn(message, a...)
 }
 
+// DumpTopics prints the topic structure to the terminal.
 func (rs *RiveScript) DumpTopics() {
 	for topic, data := range rs.topics {
 		fmt.Printf("Topic: %s\n", topic)
@@ -45,6 +48,7 @@ func (rs *RiveScript) DumpTopics() {
 	}
 }
 
+// DumpSorted prints the sorted structure to the terminal.
 func (rs *RiveScript) DumpSorted() {
 	rs._dumpSorted(rs.sorted.topics, "Topics")
 	rs._dumpSorted(rs.sorted.thats, "Thats")

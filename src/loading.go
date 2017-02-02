@@ -4,19 +4,19 @@ package rivescript
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
+// LoadFile loads a single file into memory.
 func (rs *RiveScript) LoadFile(path string) error {
 	rs.say("Load RiveScript file: %s", path)
 
 	fh, err := os.Open(path)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to open file %s: %s", path, err))
+		return fmt.Errorf("Failed to open file %s: %s", path, err)
 	}
 
 	defer fh.Close()
@@ -31,6 +31,7 @@ func (rs *RiveScript) LoadFile(path string) error {
 	return rs.parse(path, lines)
 }
 
+// LoadDirectory loads a directory of files into memory.
 func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 	if len(extensions) == 0 {
 		extensions = []string{".rive", ".rs"}
@@ -38,9 +39,15 @@ func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 
 	files, err := filepath.Glob(fmt.Sprintf("%s/*", path))
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to open folder %s: %s", path, err))
+		return fmt.Errorf("Failed to open folder %s: %s", path, err)
 	}
 
+	// No files matched?
+	if len(files) == 0 {
+		return fmt.Errorf("No RiveScript source files were found in %s", path)
+	}
+
+	var anyValid bool
 	for _, f := range files {
 		// Restrict file extensions.
 		validExtension := false
@@ -52,6 +59,7 @@ func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 		}
 
 		if validExtension {
+			anyValid = true
 			err := rs.LoadFile(f)
 			if err != nil {
 				return err
@@ -59,40 +67,15 @@ func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 		}
 	}
 
+	if !anyValid {
+		return fmt.Errorf("No RiveScript source files were found in %s", path)
+	}
+
 	return nil
 }
 
+// Stream dynamically loads RiveScript source from a string.
 func (rs *RiveScript) Stream(code string) error {
 	lines := strings.Split(code, "\n")
 	return rs.parse("Stream()", lines)
-}
-
-func (rs *RiveScript) SortReplies() {
-	// (Re)initialize the sort cache.
-	rs.sorted.topics = map[string][]sortedTriggerEntry{}
-	rs.sorted.thats = map[string][]sortedTriggerEntry{}
-	rs.say("Sorting triggers...")
-
-	// Loop through all the topics.
-	for topic, _ := range rs.topics {
-		rs.say("Analyzing topic %s", topic)
-
-		// Collect a list of all the triggers we're going to worry about. If this
-		// topic inherits another topic, we need to recursively add those to the
-		// list as well.
-		allTriggers := rs.getTopicTriggers(topic, rs.topics, nil)
-
-		// Sort these triggers.
-		rs.sorted.topics[topic] = rs.sortTriggerSet(allTriggers, true)
-
-		// Get all of the %Previous triggers for this topic.
-		thatTriggers := rs.getTopicTriggers(topic, nil, rs.thats)
-
-		// And sort them, too.
-		rs.sorted.thats[topic] = rs.sortTriggerSet(thatTriggers, false)
-	}
-
-	// Sort the substitution lists.
-	rs.sorted.sub = sortList(rs.sub)
-	rs.sorted.person = sortList(rs.person)
 }

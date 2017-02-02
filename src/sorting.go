@@ -3,10 +3,54 @@ package rivescript
 // Data sorting functions
 
 import (
+	"errors"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+// SortReplies prepares the internal sort buffers to get ready for replying.
+func (rs *RiveScript) SortReplies() error {
+	// (Re)initialize the sort cache.
+	rs.sorted.topics = map[string][]sortedTriggerEntry{}
+	rs.sorted.thats = map[string][]sortedTriggerEntry{}
+	rs.say("Sorting triggers...")
+
+	// If there are no topics, give an error.
+	if len(rs.topics) == 0 {
+		return errors.New("SortReplies: no topics were found; did you load any RiveScript code?")
+	}
+
+	// Loop through all the topics.
+	for topic := range rs.topics {
+		rs.say("Analyzing topic %s", topic)
+
+		// Collect a list of all the triggers we're going to worry about. If this
+		// topic inherits another topic, we need to recursively add those to the
+		// list as well.
+		allTriggers := rs.getTopicTriggers(topic, rs.topics, nil)
+
+		// Sort these triggers.
+		rs.sorted.topics[topic] = rs.sortTriggerSet(allTriggers, true)
+
+		// Get all of the %Previous triggers for this topic.
+		thatTriggers := rs.getTopicTriggers(topic, nil, rs.thats)
+
+		// And sort them, too.
+		rs.sorted.thats[topic] = rs.sortTriggerSet(thatTriggers, false)
+	}
+
+	// Sort the substitution lists.
+	rs.sorted.sub = sortList(rs.sub)
+	rs.sorted.person = sortList(rs.person)
+
+	// Did we sort anything at all?
+	if len(rs.sorted.topics) == 0 && len(rs.sorted.thats) == 0 {
+		return errors.New("SortReplies: ended up with empty trigger lists; did you load any RiveScript code?")
+	}
+
+	return nil
+}
 
 /*
 sortTriggerSet sorts a group of triggers in an optimal sorting order.
@@ -33,7 +77,7 @@ func (rs *RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevi
 		}
 
 		// Check the trigger text for any {weight} tags, default being 0
-		match := re_weight.FindStringSubmatch(trig.trigger)
+		match := reWeight.FindStringSubmatch(trig.trigger)
 		weight := 0
 		if len(match) > 0 {
 			weight, _ = strconv.Atoi(match[1])
@@ -79,7 +123,7 @@ func (rs *RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevi
 			rs.say("Looking at trigger: %s", pattern)
 
 			// See if the trigger has an {inherits} tag.
-			match := re_inherits.FindStringSubmatch(pattern)
+			match := reInherits.FindStringSubmatch(pattern)
 			if len(match) > 0 {
 				inherits, _ = strconv.Atoi(match[1])
 				if inherits > highestInherits {
@@ -87,7 +131,7 @@ func (rs *RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevi
 				}
 				rs.say("Trigger belongs to a topic that inherits other topics. "+
 					"Level=%d", inherits)
-				pattern = re_inherits.ReplaceAllString(pattern, "")
+				pattern = reInherits.ReplaceAllString(pattern, "")
 			} else {
 				inherits = -1
 			}
@@ -194,7 +238,7 @@ func sortList(dict map[string]string) []string {
 	track := map[int][]string{}
 
 	// Loop through each item.
-	for item, _ := range dict {
+	for item := range dict {
 		cnt := wordCount(item, true)
 		if _, ok := track[cnt]; !ok {
 			track[cnt] = []string{}
@@ -204,7 +248,7 @@ func sortList(dict map[string]string) []string {
 
 	// Sort them by word count, descending.
 	sortedCounts := []int{}
-	for cnt, _ := range track {
+	for cnt := range track {
 		sortedCounts = append(sortedCounts, cnt)
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(sortedCounts)))
@@ -301,14 +345,14 @@ func sortByLength(running []sortedTriggerEntry, triggers []sortedTriggerEntry) [
 
 // initSortTrack initializes a new, empty sortTrack object.
 func initSortTrack() *sortTrack {
-	track := new(sortTrack)
-	track.atomic = map[int][]sortedTriggerEntry{}
-	track.option = map[int][]sortedTriggerEntry{}
-	track.alpha = map[int][]sortedTriggerEntry{}
-	track.number = map[int][]sortedTriggerEntry{}
-	track.wild = map[int][]sortedTriggerEntry{}
-	track.pound = []sortedTriggerEntry{}
-	track.under = []sortedTriggerEntry{}
-	track.star = []sortedTriggerEntry{}
-	return track
+	return &sortTrack{
+		atomic: map[int][]sortedTriggerEntry{},
+		option: map[int][]sortedTriggerEntry{},
+		alpha:  map[int][]sortedTriggerEntry{},
+		number: map[int][]sortedTriggerEntry{},
+		wild:   map[int][]sortedTriggerEntry{},
+		pound:  []sortedTriggerEntry{},
+		under:  []sortedTriggerEntry{},
+		star:   []sortedTriggerEntry{},
+	}
 }

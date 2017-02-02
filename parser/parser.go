@@ -8,7 +8,6 @@ RiveScript source code and get an "abstract syntax tree" back from it.
 package parser
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -90,19 +89,19 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 	// NOTE: the all caps AST is the instance, and the lowercase ast is the
 	//       package that defines the types.
 	AST := ast.New()
-	AST.Begin.Global["hi"] = "true"
 
 	// Track temporary variables
-	topic := "random"        // Default topic = random
-	lineno := 0              // Line numbers for syntax tracking
-	comment := false         // In a multi-line comment
-	inobj := false           // In an object macro
-	objName := ""            // Name of the object we're in
-	objLang := ""            // The programming language of the object
-	objBuf := []string{}     // Source code buffer of the object
-	isThat := ""             // Is a %Previous trigger
-	var curTrig *ast.Trigger // Pointer to the current trigger
-	curTrig = nil
+	var (
+		topic   = "random"   // Default topic = random
+		lineno  int          // Line numbers for syntax tracking
+		comment bool         // In a multi-line comment
+		inobj   bool         // In an object macro
+		objName string       // Name of the object we're in
+		objLang string       // The programming language of the object
+		objBuf  = []string{} // Source code buffer of the object
+		isThat  string       // Is a %Previous trigger
+		curTrig *ast.Trigger // Pointer to the current trigger
+	)
 
 	// Local (file-scoped) parser options.
 	localOptions := map[string]string{
@@ -251,16 +250,19 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 		// Handle the types of RiveScript commands
 		switch cmd {
 		case "!": // ! Define
-			halves := strings.SplitN(line, "=", 2)
-			left := strings.Split(strings.TrimSpace(halves[0]), " ")
-			value := ""
-			type_ := ""
-			name := ""
+			var (
+				halves = strings.SplitN(line, "=", 2)
+				left   = strings.Split(strings.TrimSpace(halves[0]), " ")
+				value  string
+				kind   string // global, var, sub, ...
+				name   string
+			)
+
 			if len(halves) == 2 {
 				value = strings.TrimSpace(halves[1])
 			}
 			if len(left) >= 1 {
-				type_ = strings.TrimSpace(left[0])
+				kind = strings.TrimSpace(left[0])
 				if len(left) >= 2 {
 					left = left[1:]
 					name = strings.TrimSpace(strings.Join(left, " "))
@@ -268,17 +270,18 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 			}
 
 			// Remove 'fake' line breaks unless this is an array.
-			if type_ != "array" {
+			if kind != "array" {
 				crlfReplacer := strings.NewReplacer("<crlf>", "")
 				value = crlfReplacer.Replace(value)
 			}
 
 			// Handle version numbers
-			if type_ == "version" {
+			if kind == "version" {
 				parsedVersion, _ := strconv.ParseFloat(value, 32)
 				if parsedVersion > RS_VERSION {
-					return nil, errors.New(
-						fmt.Sprintf("Unsupported RiveScript version. We only support %f at %s line %d", RS_VERSION, filename, lineno),
+					return nil, fmt.Errorf(
+						"Unsupported RiveScript version. We only support %f at %s line %d",
+						RS_VERSION, filename, lineno,
 					)
 				}
 				continue
@@ -295,7 +298,7 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 			}
 
 			// Handle the rest of the !Define types.
-			switch type_ {
+			switch kind {
 			case "local":
 				// Local file-scoped parser options
 				self.say("\tSet local parser option %s = %s", name, value)
@@ -326,7 +329,7 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 				}
 
 				// Convert any remaining \s's over.
-				for i, _ := range fields {
+				for i := range fields {
 					spaceReplacer := strings.NewReplacer("\\s", " ")
 					fields[i] = spaceReplacer.Replace(fields[i])
 				}
@@ -341,11 +344,11 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 				self.say("\tSet person substitution %s = %s", name, value)
 				AST.Begin.Person[name] = value
 			default:
-				self.warn("Unknown definition type '%s'", filename, lineno, type_)
+				self.warn("Unknown definition type '%s'", filename, lineno, kind)
 			}
 		case ">": // > Label
 			temp := strings.Split(strings.TrimSpace(line), " ")
-			type_ := temp[0]
+			kind := temp[0]
 			temp = temp[1:]
 			name := ""
 			fields := []string{}
@@ -358,12 +361,12 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 			}
 
 			// Handle the label types.
-			if type_ == "begin" {
+			if kind == "begin" {
 				self.say("Found the BEGIN block.")
-				type_ = "topic"
+				kind = "topic"
 				name = "__begin__"
 			}
-			if type_ == "topic" {
+			if kind == "topic" {
 				self.say("Set topic to %s", name)
 				curTrig = nil
 				topic = name
@@ -384,7 +387,7 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 						}
 					}
 				}
-			} else if type_ == "object" {
+			} else if kind == "object" {
 				// If a field was provided, it should be the programming language.
 				lang := ""
 				if len(fields) > 0 {
@@ -394,6 +397,9 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 				// Missing language?
 				if lang == "" {
 					self.warn("No programming language specified for object '%s'", filename, lineno, name)
+					inobj = true
+					objName = name
+					objLang = "__unknown__"
 					continue
 				}
 
@@ -403,15 +409,15 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 				objBuf = []string{}
 				inobj = true
 			} else {
-				self.warn("Unknown label type '%s'", filename, lineno, type_)
+				self.warn("Unknown label type '%s'", filename, lineno, kind)
 			}
 		case "<": // < Label
-			type_ := line
+			kind := line
 
-			if type_ == "begin" || type_ == "topic" {
+			if kind == "begin" || kind == "topic" {
 				self.say("\tEnd the topic label.")
 				topic = "random" // Go back to default topic
-			} else if type_ == "object" {
+			} else if kind == "object" {
 				self.say("\tEnd the object label.")
 				inobj = false
 			}

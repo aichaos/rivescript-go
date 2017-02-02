@@ -2,6 +2,66 @@
 
 This documents the history of significant changes to `rivescript-go`.
 
+## v0.1.1 - TBD
+
+This update focuses on bug fixes and code reorganization.
+
+### API Breaking Changes
+
+* `rivescript.New()` and the `Config` struct have been refactored. `Config`
+  now comes from the `rivescript` package directly rather than needing to
+  import from `rivescript/config`.
+
+  For your code, this means you can remove the `aichaos/rivescript-go/config`
+  import and change the `config.Config` name to `rivescript.Config`:
+
+  ```go
+  import "github.com/aichaos/rivescript-go"
+
+  func main() {
+      // Example defining the struct to override defaults.
+      bot := rivescript.New(&rivescript.Config{Debug: true})
+
+      // For the old `config.Basic()` that provided default settings, just
+      // pass in a nil Config object.
+      bot = rivescript.New(nil)
+
+      // For the old `config.UTF8()` helper function that provided a Config with
+      // UTF-8 mode enabled, instead call rivescript.WithUTF8()
+      bot = rivescript.New(rivescript.WithUTF8())
+  }
+  ```
+* `Reply()`, `SortReplies()` and `CurrentUser()` now return an `error` value
+  in addition to what they already returned.
+
+### Changes
+
+* Separate the unit tests into multiple files and put them in the `rivescript`
+  package instead of `rivescript_test`; this enables test code coverage
+  reporting (we're at 72.1% coverage!)
+* Handle module configuration at the root package instead of in the `src`
+  package. This enabled getting rid of the `rivescript/config` package and
+  making the public API more sane.
+* Code cleanup via `go vet`
+* Add more documentation and examples to the Go doc.
+* Fix `@Redirects` not working sometimes when tags like `<bot>` insert capital
+  letters (bug #1)
+* Fix an incorrect regexp that makes wildcards inside of optionals, like `[_]`,
+  not matchable in `<star>` tags. For example, with `+ my favorite [_] is *`
+  and a message of "my favorite color is red", `<star1>` would be "red" because
+  the optional makes its wildcard non-capturing (bug #15)
+* Fix the `<star>` tag handling to support star numbers greater than `<star9>`:
+  you can use as many star numbers as will be captured by your trigger (bug #16)
+* Fix a probable bug within inheritance/includes: some parts of the code were
+  looking in one location for them, another in the other, so they probably
+  didn't work perfectly before.
+* Fix `RemoveHandler()` to make it remove all known object macros that used that
+  handler, which protects against a possible null pointer exception.
+* Fix `LoadDirectory()` to return an error when doesn't find any RiveScript
+  source files to load, which helps protect against the common error that you
+  gave it the wrong directory.
+* New unit tests: object macros
+
 ## v0.1.0 - Dec 11, 2016
 
 This update changes some function prototypes in the API which breaks backward
