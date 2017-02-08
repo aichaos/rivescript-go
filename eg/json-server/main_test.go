@@ -9,12 +9,11 @@ import (
 	"reflect"
 	"testing"
 
-	rivescript "github.com/aichaos/rivescript-go"
-	"github.com/aichaos/rivescript-go/config"
+	"github.com/aichaos/rivescript-go"
 )
 
 func init() {
-	Bot = rivescript.New(config.UTF8())
+	Bot = rivescript.New(rivescript.WithUTF8())
 	Bot.Stream(`
 		+ hello bot
 		- Hello human.

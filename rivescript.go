@@ -20,7 +20,7 @@ import (
 )
 
 // VERSION describes the module version.
-const VERSION string = "0.1.1"
+const VERSION string = "0.2.0"
 
 // RiveScript represents an individual chatbot instance.
 type RiveScript struct {

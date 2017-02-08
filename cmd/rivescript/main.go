@@ -41,7 +41,7 @@ func init() {
 	flag.BoolVar(&version, "version", false, "Show the version number and exit.")
 	flag.BoolVar(&debug, "debug", false, "Enable debug mode.")
 	flag.BoolVar(&utf8, "utf8", false, "Enable UTF-8 mode.")
-	flag.UintVar(&depth, "depth", 50, "Recursion depth limit (default 50)")
+	flag.UintVar(&depth, "depth", 50, "Recursion depth limit")
 	flag.BoolVar(&nostrict, "nostrict", false, "Disable strict syntax checking")
 	flag.BoolVar(&nocolor, "nocolor", false, "Disable ANSI colors")
 }

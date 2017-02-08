@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/aichaos/rivescript-go"
-	"github.com/aichaos/rivescript-go/config"
 	"github.com/aichaos/rivescript-go/lang/javascript"
 )
 
@@ -32,7 +31,7 @@ func main() {
 	flag.Parse()
 
 	// Set up the RiveScript bot.
-	Bot = rivescript.New(&config.Config{
+	Bot = rivescript.New(&rivescript.Config{
 		Debug: *debug,
 		UTF8:  *utf8,
 	})
@@ -48,14 +47,14 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
-// Type Request describes the JSON arguments to the API.
+// Request describes the JSON arguments to the API.
 type Request struct {
 	Username string            `json:"username"`
 	Message  string            `json:"message"`
 	Vars     map[string]string `json:"vars"`
 }
 
-// Type Response describes the JSON output from the API.
+// Response describes the JSON output from the API.
 type Response struct {
 	Status string            `json:"status"` // 'ok' or 'error'
 	Error  string            `json:"error,omitempty"`
@@ -98,7 +97,11 @@ func ReplyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get a reply from the bot.
-	reply := Bot.Reply(params.Username, params.Message)
+	reply, err := Bot.Reply(params.Username, params.Message)
+	if err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Retrieve all user variables from the bot.
 	var vars map[string]string
