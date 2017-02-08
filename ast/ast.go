@@ -17,14 +17,14 @@ The tree looks like this (in JSON-style syntax):
 */
 package ast
 
-// Type Root represents the root of the AST tree.
+// Root represents the root of the AST tree.
 type Root struct {
 	Begin   Begin             `json:"begin"`
 	Topics  map[string]*Topic `json:"topics"`
 	Objects []*Object         `json:"objects"`
 }
 
-// Type Begin represents the "begin block" style data (configuration).
+// Begin represents the "begin block" style data (configuration).
 type Begin struct {
 	Global map[string]string   `json:"global"`
 	Var    map[string]string   `json:"var"`
@@ -33,14 +33,14 @@ type Begin struct {
 	Array  map[string][]string `json:"array"` // Map of string (names) to arrays-of-strings
 }
 
-// Type Topic represents a topic of conversation.
+// Topic represents a topic of conversation.
 type Topic struct {
 	Triggers []*Trigger      `json:"triggers"`
 	Includes map[string]bool `json:"includes"`
 	Inherits map[string]bool `json:"inherits"`
 }
 
-// Type Trigger has a trigger pattern and all the subsequent handlers for it.
+// Trigger has a trigger pattern and all the subsequent handlers for it.
 type Trigger struct {
 	Trigger   string   `json:"trigger"`
 	Reply     []string `json:"reply"`
@@ -49,7 +49,7 @@ type Trigger struct {
 	Previous  string   `json:"previous"`
 }
 
-// Type Object contains source code of dynamically parsed object macros.
+// Object contains source code of dynamically parsed object macros.
 type Object struct {
 	Name     string   `json:"name"`
 	Language string   `json:"language"`
@@ -58,21 +58,21 @@ type Object struct {
 
 // New creates a new, empty, abstract syntax tree.
 func New() *Root {
-	ast := new(Root)
-
-	// Initialize all the structures.
-	ast.Begin.Global = map[string]string{}
-	ast.Begin.Var = map[string]string{}
-	ast.Begin.Sub = map[string]string{}
-	ast.Begin.Person = map[string]string{}
-	ast.Begin.Array = map[string][]string{}
+	ast := &Root{
+		// Initialize all the structures.
+		Begin: Begin{
+			Global: map[string]string{},
+			Var:    map[string]string{},
+			Sub:    map[string]string{},
+			Person: map[string]string{},
+			Array:  map[string][]string{},
+		},
+		Topics:  map[string]*Topic{},
+		Objects: []*Object{},
+	}
 
 	// Initialize the 'random' topic.
-	ast.Topics = map[string]*Topic{}
 	ast.AddTopic("random")
-
-	// Objects
-	ast.Objects = []*Object{}
 
 	return ast
 }

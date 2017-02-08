@@ -4,6 +4,9 @@ package rivescript
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/aichaos/rivescript-go/macro"
 	"github.com/aichaos/rivescript-go/sessions"
@@ -53,6 +56,23 @@ func (rs *RiveScript) DeleteSubroutine(name string) {
 func (rs *RiveScript) SetGlobal(name, value string) {
 	rs.cLock.Lock()
 	defer rs.cLock.Unlock()
+
+	// Special globals that reconfigure the interpreter.
+	if name == "debug" {
+		switch strings.ToLower(value) {
+		case "true", "t", "on", "yes":
+			rs.Debug = true
+		default:
+			rs.Debug = false
+		}
+	} else if name == "depth" {
+		depth, err := strconv.Atoi(value)
+		if err != nil {
+			rs.warn("Can't set global `depth` to `%s`: %s\n", value, err)
+		} else {
+			rs.Depth = uint(depth)
+		}
+	}
 
 	if value == UNDEFINED {
 		delete(rs.global, name)
@@ -114,10 +134,17 @@ func (rs *RiveScript) GetGlobal(name string) (string, error) {
 	rs.cLock.Lock()
 	defer rs.cLock.Unlock()
 
+	// Special globals.
+	if name == "debug" {
+		return fmt.Sprintf("%v", rs.Debug), nil
+	} else if name == "depth" {
+		return strconv.Itoa(int(rs.Depth)), nil
+	}
+
 	if _, ok := rs.global[name]; ok {
 		return rs.global[name], nil
 	}
-	return UNDEFINED, errors.New("Global variable not found.")
+	return UNDEFINED, fmt.Errorf("global variable %s not found", name)
 }
 
 // GetVariable retrieves the value of a bot variable.
@@ -128,7 +155,7 @@ func (rs *RiveScript) GetVariable(name string) (string, error) {
 	if _, ok := rs.vars[name]; ok {
 		return rs.vars[name], nil
 	}
-	return UNDEFINED, errors.New("Variable not found.")
+	return UNDEFINED, fmt.Errorf("bot variable %s not found", name)
 }
 
 // GetUservar retrieves the value of a user variable.
