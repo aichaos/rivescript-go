@@ -55,7 +55,6 @@ type RiveScript struct {
 	handlers    map[string]macro.MacroInterface // object language handlers
 	subroutines map[string]Subroutine           // Golang object handlers
 	topics      map[string]*astTopic            // main topic structure
-	thats       map[string]*thatTopic           // %Previous mapper
 	sorted      *sortBuffer                     // Sorted data from SortReplies()
 
 	// State information.
@@ -69,37 +68,36 @@ type RiveScript struct {
 
 // New creates a new RiveScript instance with the default configuration.
 func New() *RiveScript {
-	rs := new(RiveScript)
+	rs := &RiveScript{
+		// Set the default config objects that don't have good zero-values.
+		Strict:   true,
+		Depth:    50,
+		sessions: memory.New(),
 
-	// Set the default config objects that don't have good zero-values.
-	rs.Strict = true
-	rs.Depth = 50
-	rs.sessions = memory.New()
+		// Default punctuation that gets removed from messages in UTF-8 mode.
+		UnicodePunctuation: regexp.MustCompile(`[.,!?;:]`),
 
-	rs.UnicodePunctuation = regexp.MustCompile(`[.,!?;:]`)
+		// Initialize all internal data structures.
+		global:      map[string]string{},
+		vars:        map[string]string{},
+		sub:         map[string]string{},
+		person:      map[string]string{},
+		array:       map[string][]string{},
+		includes:    map[string]map[string]bool{},
+		inherits:    map[string]map[string]bool{},
+		objlangs:    map[string]string{},
+		handlers:    map[string]macro.MacroInterface{},
+		subroutines: map[string]Subroutine{},
+		topics:      map[string]*astTopic{},
+		sorted:      new(sortBuffer),
+	}
 
-	// Initialize helpers.
+	// Helpers.
 	rs.parser = parser.New(parser.ParserConfig{
-		Strict:  rs.Strict,
-		UTF8:    rs.UTF8,
+		Strict:  true,
 		OnDebug: rs.say,
 		OnWarn:  rs.warnSyntax,
 	})
-
-	// Initialize all the data structures.
-	rs.global = map[string]string{}
-	rs.vars = map[string]string{}
-	rs.sub = map[string]string{}
-	rs.person = map[string]string{}
-	rs.array = map[string][]string{}
-	rs.includes = map[string]map[string]bool{}
-	rs.inherits = map[string]map[string]bool{}
-	rs.objlangs = map[string]string{}
-	rs.handlers = map[string]macro.MacroInterface{}
-	rs.subroutines = map[string]Subroutine{}
-	rs.topics = map[string]*astTopic{}
-	rs.thats = map[string]*thatTopic{}
-	rs.sorted = new(sortBuffer)
 
 	return rs
 }
@@ -113,6 +111,14 @@ func (rs *RiveScript) Configure(debug, strict, utf8 bool, depth uint,
 	rs.UTF8 = utf8
 	rs.Depth = depth
 	rs.sessions = sessions
+
+	// Reconfigure the parser.
+	rs.parser = parser.New(parser.ParserConfig{
+		Strict:  strict,
+		UTF8:    utf8,
+		OnDebug: rs.say,
+		OnWarn:  rs.warnSyntax,
+	})
 }
 
 // SetUnicodePunctuation allows for overriding the regexp for punctuation.

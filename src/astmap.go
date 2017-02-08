@@ -54,12 +54,3 @@ type astObject struct {
 	language string
 	code     []string
 }
-
-// This is like astTopic but is just for %Previous mapping
-type thatTopic struct {
-	triggers map[string]*thatTrigger
-}
-
-type thatTrigger struct {
-	previous map[string]*astTrigger
-}

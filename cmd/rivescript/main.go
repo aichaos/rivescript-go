@@ -27,17 +27,31 @@ import (
 	"github.com/aichaos/rivescript-go/lang/javascript"
 )
 
+var (
+	// Command line arguments.
+	version  bool
+	debug    bool
+	utf8     bool
+	depth    uint
+	nostrict bool
+	nocolor  bool
+)
+
+func init() {
+	flag.BoolVar(&version, "version", false, "Show the version number and exit.")
+	flag.BoolVar(&debug, "debug", false, "Enable debug mode.")
+	flag.BoolVar(&utf8, "utf8", false, "Enable UTF-8 mode.")
+	flag.UintVar(&depth, "depth", 50, "Recursion depth limit (default 50)")
+	flag.BoolVar(&nostrict, "nostrict", false, "Disable strict syntax checking")
+	flag.BoolVar(&nocolor, "nocolor", false, "Disable ANSI colors")
+}
+
 func main() {
 	// Collect command line arguments.
-	version := flag.Bool("version", false, "Show the version number and exit.")
-	debug := flag.Bool("debug", false, "Enable debug mode.")
-	utf8 := flag.Bool("utf8", false, "Enable UTF-8 mode.")
-	depth := flag.Uint("depth", 50, "Recursion depth limit (default 50)")
-	nostrict := flag.Bool("nostrict", false, "Disable strict syntax checking")
 	flag.Parse()
 	args := flag.Args()
 
-	if *version == true {
+	if version {
 		fmt.Printf("RiveScript-Go version %s\n", rivescript.VERSION)
 		os.Exit(0)
 	}
@@ -51,10 +65,10 @@ func main() {
 
 	// Initialize the bot.
 	bot := rivescript.New(&rivescript.Config{
-		Debug:  *debug,
-		Strict: !*nostrict,
-		Depth:  *depth,
-		UTF8:   *utf8,
+		Debug:  debug,
+		Strict: !nostrict,
+		Depth:  depth,
+		UTF8:   utf8,
 	})
 
 	// JavaScript object macro handler.
@@ -85,31 +99,76 @@ Type a message to the bot and press Return to send it.
 	// Drop into the interactive command shell.
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print("You> ")
+		color(yellow, "You>")
 		text, _ := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
 		if len(text) == 0 {
 			continue
 		}
 
-		if strings.Index(text, "/help") == 0 {
+		if strings.Contains(text, "/help") {
 			help()
-		} else if strings.Index(text, "/quit") == 0 {
+		} else if strings.Contains(text, "/quit") {
 			os.Exit(0)
+		} else if strings.Contains(text, "/debug t") {
+			bot.SetGlobal("debug", "true")
+			color(cyan, "Debug mode enabled.", "\n")
+		} else if strings.Contains(text, "/debug f") {
+			bot.SetGlobal("debug", "false")
+			color(cyan, "Debug mode disabled.", "\n")
+		} else if strings.Contains(text, "/debug") {
+			debug, _ := bot.GetGlobal("debug")
+			color(cyan, "Debug mode is currently:", debug, "\n")
+		} else if strings.Contains(text, "/dump t") {
+			bot.DumpTopics()
+		} else if strings.Contains(text, "/dump s") {
+			bot.DumpSorted()
 		} else {
 			reply, err := bot.Reply("localuser", text)
 			if err != nil {
-				fmt.Printf("Error> %s\n", err)
+				color(red, "Error>", err.Error(), "\n")
 			} else {
-				fmt.Printf("Bot> %s\n", reply)
+				color(green, "RiveScript>", reply, "\n")
 			}
 		}
 	}
 }
 
+// Names for pretty ANSI colors.
+const (
+	red    = `31;1`
+	yellow = `33;1`
+	green  = `32;1`
+	cyan   = `36;1`
+)
+
+func color(color string, text ...string) {
+	if nocolor {
+		fmt.Printf(
+			"%s %s",
+			text[0],
+			strings.Join(text[1:], " "),
+		)
+	} else {
+		fmt.Printf(
+			"\x1b[%sm%s\x1b[0m %s",
+			color,
+			text[0],
+			strings.Join(text[1:], " "),
+		)
+	}
+}
+
 func help() {
 	fmt.Printf(`Supported commands:
-- /help : Show this text.
-- /quit : Exit the program.
+- /help
+    Show this text.
+- /quit
+    Exit the program.
+- /debug [true|false]
+    Enable or disable debug mode. If no setting is given, it prints
+    the current debug mode.
+- /dump <topics|sorted>
+    For debugging purposes, dump the topic and sorted trigger trees.
 `)
 }
