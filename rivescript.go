@@ -20,7 +20,7 @@ import (
 )
 
 // VERSION describes the module version.
-const VERSION string = "0.1.1"
+const VERSION string = "0.2.0"
 
 // RiveScript represents an individual chatbot instance.
 type RiveScript struct {
@@ -52,12 +52,7 @@ func New(cfg *Config) *RiveScript {
 		cfg.SessionManager = memory.New()
 	}
 
-	// Default depth if not given is 50.
-	if cfg.Depth <= 0 {
-		cfg.Depth = 50
-	}
-
-	bot.rs.Configure(cfg.Debug, cfg.Strict, cfg.UTF8, cfg.Depth, memory.New())
+	bot.rs.Configure(cfg.Debug, cfg.Strict, cfg.UTF8, cfg.Depth, cfg.Seed, cfg.SessionManager)
 
 	return bot
 }

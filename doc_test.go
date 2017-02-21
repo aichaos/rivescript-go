@@ -1,4 +1,4 @@
-package rivescript
+package rivescript_test
 
 import (
 	"fmt"
@@ -108,7 +108,7 @@ func ExampleRiveScript_subroutine() {
 
 	// Define an object macro named `setname`
 	bot.SetSubroutine("setname", func(rs *rss.RiveScript, args []string) string {
-		uid := rs.CurrentUser()
+		uid, _ := rs.CurrentUser()
 		rs.SetUservar(uid, args[0], args[1])
 		return ""
 	})

@@ -2,7 +2,7 @@
 
 This documents the history of significant changes to `rivescript-go`.
 
-## v0.1.1 - TBD
+## v0.2.0 - Feb 7, 2016
 
 This update focuses on bug fixes and code reorganization.
 
@@ -36,6 +36,13 @@ This update focuses on bug fixes and code reorganization.
 
 ### Changes
 
+* Add ANSI colors to the RiveScript shell (`cmd/rivescript`); they can be
+  disabled with the `-nocolor` command line option.
+* Add new commands to the RiveScript shell:
+  * `/debug [true|false]` to toggle the debug mode (`/debug` will print
+    the current setting of debug mode).
+  * `/dump <topics|sorted>` to print the internal data structures for the
+    topics and sorted trigger sets, respectively.
 * Separate the unit tests into multiple files and put them in the `rivescript`
   package instead of `rivescript_test`; this enables test code coverage
   reporting (we're at 72.1% coverage!)
@@ -60,7 +67,9 @@ This update focuses on bug fixes and code reorganization.
 * Fix `LoadDirectory()` to return an error when doesn't find any RiveScript
   source files to load, which helps protect against the common error that you
   gave it the wrong directory.
-* New unit tests: object macros
+* New unit tests: object macros.
+* An internal optimization that allowed for cleaning up a redundant storage
+  location for triggers that have `%Previous` commands (PR #20)
 
 ## v0.1.0 - Dec 11, 2016
 

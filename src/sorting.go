@@ -28,13 +28,13 @@ func (rs *RiveScript) SortReplies() error {
 		// Collect a list of all the triggers we're going to worry about. If this
 		// topic inherits another topic, we need to recursively add those to the
 		// list as well.
-		allTriggers := rs.getTopicTriggers(topic, rs.topics, nil)
+		allTriggers := rs.getTopicTriggers(topic, false)
 
 		// Sort these triggers.
 		rs.sorted.topics[topic] = rs.sortTriggerSet(allTriggers, true)
 
 		// Get all of the %Previous triggers for this topic.
-		thatTriggers := rs.getTopicTriggers(topic, nil, rs.thats)
+		thatTriggers := rs.getTopicTriggers(topic, true)
 
 		// And sort them, too.
 		rs.sorted.thats[topic] = rs.sortTriggerSet(thatTriggers, false)

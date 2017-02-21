@@ -2,7 +2,6 @@ package rivescript
 
 import (
 	"fmt"
-	"math/rand"
 	re "regexp"
 	"strconv"
 	"strings"
@@ -352,7 +351,7 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 
 			// Get a random reply.
 			if len(bucket) > 0 {
-				reply = bucket[rand.Intn(len(bucket))]
+				reply = bucket[rs.randomInt(len(bucket))]
 			}
 			break
 		}

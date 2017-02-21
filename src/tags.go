@@ -4,7 +4,6 @@ package rivescript
 
 import (
 	"fmt"
-	"math/rand"
 	"regexp"
 	"strconv"
 	"strings"
@@ -265,7 +264,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 
 		output := ""
 		if len(random) > 0 {
-			output = random[rand.Intn(len(random))]
+			output = random[rs.randomInt(len(random))]
 		}
 
 		reply = strings.Replace(reply, fmt.Sprintf("{random}%s{/random}", text), output, -1)

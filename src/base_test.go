@@ -30,7 +30,7 @@ func NewTestWithConfig(t *testing.T, debug, utf8 bool, ses sessions.SessionManag
 		t:        t,
 		username: "soandso",
 	}
-	test.bot.Configure(debug, true, utf8, 50, ses)
+	test.bot.Configure(debug, true, utf8, 50, 0, ses)
 	return test
 }
 

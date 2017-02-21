@@ -78,23 +78,6 @@ func (rs *RiveScript) parse(path string, lines []string) error {
 			trigger.previous = trig.Previous
 
 			rs.topics[topic].triggers = append(rs.topics[topic].triggers, trigger)
-
-			// Does this one have a %Previous? If so, make a pointer to this
-			// exact trigger in rs.thats
-			if trigger.previous != "" {
-				// Initialize the structure first.
-				if _, ok := rs.thats[topic]; !ok {
-					rs.thats[topic] = new(thatTopic)
-					rs.say("%q", rs.thats[topic])
-					rs.thats[topic].triggers = map[string]*thatTrigger{}
-				}
-				if _, ok := rs.thats[topic].triggers[trigger.trigger]; !ok {
-					rs.say("%q", rs.thats[topic].triggers[trigger.trigger])
-					rs.thats[topic].triggers[trigger.trigger] = new(thatTrigger)
-					rs.thats[topic].triggers[trigger.trigger].previous = map[string]*astTrigger{}
-				}
-				rs.thats[topic].triggers[trigger.trigger].previous[trigger.previous] = trigger
-			}
 		}
 	}
 

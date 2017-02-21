@@ -48,9 +48,7 @@ type Parser struct {
 
 // New creates and returns a new instance of a RiveScript Parser.
 func New(config ParserConfig) *Parser {
-	self := new(Parser)
-	self.C = config
-	return self
+	return &Parser{config}
 }
 
 // say proxies to the OnDebug handler.

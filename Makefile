@@ -1,6 +1,6 @@
 CURDIR = $(shell pwd)
 GOPATH = "$(CURDIR)/.gopath"
-VERSION = $(shell grep -e 'VERSION' rivescript.go | head -n 1 | cut -d '"' -f 2)
+VERSION = $(shell grep -e 'const VERSION' rivescript.go | head -n 1 | cut -d '"' -f 2)
 UNAME = $(shell uname)
 all: build
 

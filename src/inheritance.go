@@ -18,17 +18,15 @@ inheritance depth.
 Params:
 
 	topic: The name of the topic to scan through
-	topics: The `rs.topics` structure if crawling the normal reply tree
-	thats: The `rs.thats` structure if crawling the %Previous reply tree
-
-You must *ONLY* provide `topics` OR `thats`, not both. Make the other one `nil`.
+	thats: Whether to get only triggers that have %Previous.
+		`false` returns all triggers.
 
 Each "trigger" returned from this function is actually an array, where index
 0 is the trigger text and index 1 is the pointer to the trigger's data within
 the original topic structure.
 */
-func (rs *RiveScript) getTopicTriggers(topic string, topics map[string]*astTopic, thats map[string]*thatTopic) []sortedTriggerEntry {
-	return rs._getTopicTriggers(topic, topics, thats, 0, 0, false)
+func (rs *RiveScript) getTopicTriggers(topic string, thats bool) []sortedTriggerEntry {
+	return rs._getTopicTriggers(topic, thats, 0, 0, false)
 }
 
 /*
@@ -51,7 +49,7 @@ The inherited option is true if this is a recursive call, from a topic that
 inherits other topics. This forces the {inherits} tag to be added to the
 triggers. This only applies when the topic 'includes' another topic.
 */
-func (rs *RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopic, thats map[string]*thatTopic, depth uint, inheritance int, inherited bool) []sortedTriggerEntry {
+func (rs *RiveScript) _getTopicTriggers(topic string, thats bool, depth uint, inheritance int, inherited bool) []sortedTriggerEntry {
 	// Break if we're in too deep.
 	if depth > rs.Depth {
 		rs.warn("Deep recursion while scanning topic inheritance!")
@@ -81,22 +79,17 @@ func (rs *RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopi
 
 	// Get those that exist in this topic directly.
 	inThisTopic := []sortedTriggerEntry{}
-	if thats == nil {
-		// The non-thats structure is: {topics}->[ array of triggers ]
-		if _, ok := rs.topics[topic]; ok {
-			for _, trigger := range rs.topics[topic].triggers {
+
+	if _, ok := rs.topics[topic]; ok {
+		for _, trigger := range rs.topics[topic].triggers {
+			if !thats {
+				// All triggers.
 				entry := sortedTriggerEntry{trigger.trigger, trigger}
 				inThisTopic = append(inThisTopic, entry)
-			}
-		}
-	} else {
-		// The 'that' structure is: {topic}->{cur trig}->{prev trig}->{trigger info}
-		if _, ok := rs.thats[topic]; ok {
-			for _, curTrig := range rs.thats[topic].triggers {
-				for _, previous := range curTrig.previous {
-					// fmt.Printf("Previous: %v, curTrig: %v\n", previous, curTrig)
-					entry := sortedTriggerEntry{previous.trigger, previous}
-					inThisTopic = append(inThisTopic, entry)
+			} else {
+				// Only triggers that have %Previous.
+				if trigger.previous != "" {
+					inThisTopic = append(inThisTopic, sortedTriggerEntry{trigger.previous, trigger})
 				}
 			}
 		}
@@ -106,7 +99,7 @@ func (rs *RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopi
 	if _, ok := rs.includes[topic]; ok {
 		for includes := range rs.includes[topic] {
 			rs.say("Topic %s includes %s", topic, includes)
-			triggers = append(triggers, rs._getTopicTriggers(includes, topics, thats, depth+1, inheritance+1, false)...)
+			triggers = append(triggers, rs._getTopicTriggers(includes, thats, depth+1, inheritance+1, false)...)
 		}
 	}
 
@@ -114,7 +107,7 @@ func (rs *RiveScript) _getTopicTriggers(topic string, topics map[string]*astTopi
 	if _, ok := rs.inherits[topic]; ok {
 		for inherits := range rs.inherits[topic] {
 			rs.say("Topic %s inherits %s", topic, inherits)
-			triggers = append(triggers, rs._getTopicTriggers(inherits, topics, thats, depth+1, inheritance+1, true)...)
+			triggers = append(triggers, rs._getTopicTriggers(inherits, thats, depth+1, inheritance+1, true)...)
 		}
 	}
 

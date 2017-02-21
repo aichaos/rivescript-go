@@ -1,5 +1,6 @@
 # RiveScript-Go
 
+[![GoDoc](https://godoc.org/github.com/aichaos/rivescript-go?status.svg)](https://godoc.org/github.com/aichaos/rivescript-go)
 [![Gitter](https://badges.gitter.im/aichaos/rivescript-go.svg)](https://gitter.im/aichaos/rivescript-go?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.org/aichaos/rivescript-go.svg?branch=master)](https://travis-ci.org/aichaos/rivescript-go)
 
@@ -41,20 +42,23 @@ To test drive RiveScript in your web browser, try the
 
 ## Documentation
 
-* RiveScript Library: <http://godoc.org/github.com/aichaos/rivescript-go>
-* RiveScript Stand-alone Interpreter: <http://godoc.org/github.com/aichaos/rivescript-go/cmd/rivescript>
-* JavaScript Object Macros: <http://godoc.org/github.com/aichaos/rivescript-go/lang/javascript>
+* RiveScript Library: <https://godoc.org/github.com/aichaos/rivescript-go>
+* RiveScript Stand-alone Interpreter: <https://godoc.org/github.com/aichaos/rivescript-go/cmd/rivescript>
+* JavaScript Object Macros: <https://godoc.org/github.com/aichaos/rivescript-go/lang/javascript>
+* RiveScript Parser: <https://godoc.org/github.com/aichaos/rivescript-go/parser>
 
 Also check out the [**RiveScript Community Wiki**](https://github.com/aichaos/rivescript/wiki)
 for common design patterns and tips & tricks for RiveScript.
 
 ## Installation
 
+For the development library:
+
 `go get github.com/aichaos/rivescript-go`
 
-For the stand-alone binary for testing a RiveScript bot:
+For the stand-alone `rivescript` binary for testing a bot:
 
-`go install github.com/aichaos/rivescript-go/cmd/rivescript`
+`go get github.com/aichaos/rivescript-go/cmd/rivescript`
 
 ## Usage
 
@@ -70,7 +74,7 @@ $ rivescript eg/brain
 > rivescript.exe eg/brain
 ```
 
-See `rivescript --help` for options it accepts, including debug mode and UTF-8
+See `rivescript -help` for options it accepts, including debug mode and UTF-8
 mode.
 
 When used as a library for writing your own chatbot, the synopsis is as follows:
@@ -81,11 +85,14 @@ package main
 import (
     "fmt"
     "github.com/aichaos/rivescript-go"
-    "github.com/aichaos/rivescript-go/config"
 )
 
 func main() {
-    bot := rivescript.New(config.Basic())
+    // Create a new bot with the default settings.
+    bot := rivescript.New(nil)
+
+    // To enable UTF-8 mode, you'd have initialized the bot like:
+    bot = rivescript.New(rivescript.WithUTF8())
 
     // Load a directory full of RiveScript documents (.rive files)
     err := bot.LoadDirectory("eg/brain")
@@ -94,7 +101,7 @@ func main() {
     }
 
     // Load an individual file.
-    err = bot.LoadFile("brain/testsuite.rive")
+    err = bot.LoadFile("./testsuite.rive")
     if err != nil {
       fmt.Printf("Error loading from file: %s", err)
     }
@@ -103,8 +110,12 @@ func main() {
     bot.SortReplies()
 
     // Get a reply.
-    reply := bot.Reply("local-user", "Hello, bot!")
-    fmt.Printf("The bot says: %s", reply)
+    reply, err := bot.Reply("local-user", "Hello, bot!")
+    if err != nil {
+      fmt.Printf("Error: %s\n", err)
+    } else {
+      fmt.Printf("The bot says: %s", reply)
+    }
 }
 ```
 
@@ -115,26 +126,24 @@ all the supported options. You only need to provide keys that are different to
 the defaults.
 
 ```go
-bot := rs.New(&config.Config{
+bot := rivescript.New(&rivescript.Config{
     Debug: false,                 // Debug mode, off by default
     Strict: false,                // No strict syntax checking
     UTF8: false,                  // No UTF-8 support enabled by default
     Depth: 50,                    // Becomes default 50 if Depth is <= 0
+    Seed: time.Now().UnixNano(),  // Random number seed (default is == 0)
     SessionManager: memory.New(), // Default in-memory session manager
 })
 ```
 
-For convenience, the `config` package provides two config templates:
+For convenience, you can use a shortcut:
 
 ```go
-// Basic has all the defaults, plus Strict=true
-bot := rs.New(config.Basic())
+// A nil config uses all the defaults.
+bot = rivescript.New(nil)
 
-// UTF8 has all of Basic's settings, plus UTF8=true
-bot := rs.New(config.UTF8())
-
-// You can also provide a nil configuration, which defaults to Basic()
-bot := rs.New(nil)
+// WithUTF8 enables UTF-8 mode (other settings left as default).
+bot = rivescript.New(rivescript.WithUTF8())
 ```
 
 ## Object Macros
@@ -152,7 +161,7 @@ JavaScript object macros using the Otto library.
 ## UTF-8 Support
 
 UTF-8 support in RiveScript is considered an experimental feature. It is
-disabled by default. Enable it by setting `RiveScript.SetUTF8(true)`.
+disabled by default.
 
 By default (without UTF-8 mode on), triggers may only contain basic ASCII
 characters (no foreign characters), and the user's message is stripped of all
@@ -170,10 +179,10 @@ string literal to the `RiveScript.SetUnicodePunctuation` function. Example:
 
 ```go
 // Make a new bot with UTF-8 mode enabled.
-bot := rivescript.New(config.UTF8())
+bot := rivescript.New(rivescript.WithUTF8())
 
-// Override the punctuation characters that get stripped from the
-// user's message.
+// Override the punctuation characters that get stripped
+// from the user's message.
 bot.SetUnicodePunctuation(`[.,!?;:]`);
 ```
 
@@ -263,7 +272,7 @@ The distributable directory contains only the following types of files:
 ```
 The MIT License (MIT)
 
-Copyright (c) 2016 Noah Petherbridge
+Copyright (c) 2017 Noah Petherbridge
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

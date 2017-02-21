@@ -8,6 +8,13 @@ import (
 	"strings"
 )
 
+// randomInt gets a random number using RiveScript's internal RNG.
+func (rs *RiveScript) randomInt(max int) int {
+	rs.randomLock.Lock()
+	defer rs.randomLock.Unlock()
+	return rs.rng.Intn(max)
+}
+
 // wordCount counts the number of real words in a string.
 func wordCount(pattern string, all bool) int {
 	var words []string
