@@ -3,7 +3,7 @@ package rivescript
 import "github.com/aichaos/rivescript-go/sessions"
 
 /*
-Type Config provides options to configure the RiveScript bot.
+Config provides options to configure the RiveScript bot.
 
 Create a pointer to this type and send it to the New() constructor to change
 the default settings. You only need to provide settings you want to override;
@@ -31,6 +31,10 @@ type Config struct {
 	// Depth controls the global limit for recursive functions within
 	// RiveScript. Default 50.
 	Depth uint
+
+	// Random number seed, if you'd like to customize it. The default is for
+	// RiveScript to choose its own seed, `time.Now().UnixNano()`
+	Seed int64
 
 	// SessionManager is an implementation of the same name for managing user
 	// variables for the bot. The default is the in-memory session handler.

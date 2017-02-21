@@ -52,12 +52,7 @@ func New(cfg *Config) *RiveScript {
 		cfg.SessionManager = memory.New()
 	}
 
-	// Default depth if not given is 50.
-	if cfg.Depth <= 0 {
-		cfg.Depth = 50
-	}
-
-	bot.rs.Configure(cfg.Debug, cfg.Strict, cfg.UTF8, cfg.Depth, cfg.SessionManager)
+	bot.rs.Configure(cfg.Debug, cfg.Strict, cfg.UTF8, cfg.Depth, cfg.Seed, cfg.SessionManager)
 
 	return bot
 }

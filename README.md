@@ -131,6 +131,7 @@ bot := rivescript.New(&rivescript.Config{
     Strict: false,                // No strict syntax checking
     UTF8: false,                  // No UTF-8 support enabled by default
     Depth: 50,                    // Becomes default 50 if Depth is <= 0
+    Seed: time.Now().UnixNano(),  // Random number seed (default is == 0)
     SessionManager: memory.New(), // Default in-memory session manager
 })
 ```

@@ -19,8 +19,10 @@ You've been warned. Here be dragons.
 package rivescript
 
 import (
+	"math/rand"
 	"regexp"
 	"sync"
+	"time"
 
 	"github.com/aichaos/rivescript-go/macro"
 	"github.com/aichaos/rivescript-go/parser"
@@ -57,6 +59,11 @@ type RiveScript struct {
 	topics      map[string]*astTopic            // main topic structure
 	sorted      *sortBuffer                     // Sorted data from SortReplies()
 
+	// The random number god.
+	random     rand.Source
+	rng        *rand.Rand
+	randomLock sync.Mutex
+
 	// State information.
 	inReplyContext bool
 	currentUser    string
@@ -90,6 +97,8 @@ func New() *RiveScript {
 		subroutines: map[string]Subroutine{},
 		topics:      map[string]*astTopic{},
 		sorted:      new(sortBuffer),
+
+		random: rand.NewSource(time.Now().UnixNano()),
 	}
 
 	// Helpers.
@@ -105,12 +114,21 @@ func New() *RiveScript {
 // Configure is a convenience function for the public API to set all of its
 // settings at once.
 func (rs *RiveScript) Configure(debug, strict, utf8 bool, depth uint,
-	sessions sessions.SessionManager) {
+	seed int64, sessions sessions.SessionManager) {
 	rs.Debug = debug
 	rs.Strict = strict
 	rs.UTF8 = utf8
 	rs.Depth = depth
 	rs.sessions = sessions
+
+	// Sensible defaults.
+	if depth == 0 {
+		rs.Depth = 50
+	}
+	if seed != 0 {
+		rs.random = rand.NewSource(seed)
+	}
+	rs.rng = rand.New(rs.random)
 
 	// Reconfigure the parser.
 	rs.parser = parser.New(parser.ParserConfig{
