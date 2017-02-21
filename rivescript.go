@@ -57,7 +57,7 @@ func New(cfg *Config) *RiveScript {
 		cfg.Depth = 50
 	}
 
-	bot.rs.Configure(cfg.Debug, cfg.Strict, cfg.UTF8, cfg.Depth, memory.New())
+	bot.rs.Configure(cfg.Debug, cfg.Strict, cfg.UTF8, cfg.Depth, cfg.SessionManager)
 
 	return bot
 }
