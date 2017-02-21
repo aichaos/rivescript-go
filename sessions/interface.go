@@ -62,17 +62,17 @@ type SessionManager interface {
 // HistorySize is the number of entries stored in the history.
 const HistorySize int = 9
 
-// Type UserData is a container for user variables.
+// UserData is a container for user variables.
 type UserData struct {
-	Variables map[string]string
-	LastMatch string
-	*History
+	Variables map[string]string `json:"vars"`
+	LastMatch string            `json:"lastMatch"`
+	*History  `json:"history"`
 }
 
-// Type History keeps track of recent input and reply history.
+// History keeps track of recent input and reply history.
 type History struct {
-	Input []string
-	Reply []string
+	Input []string `json:"input"`
+	Reply []string `json:"reply"`
 }
 
 // NewHistory creates a new History object with the history arrays filled out.
