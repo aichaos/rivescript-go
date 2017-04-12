@@ -37,7 +37,8 @@
             float: left;
         }
         button {
-            display: none;
+            visibility: hidden;
+            user-select: none;
         }
     </style>
 </head>
@@ -60,7 +61,7 @@ Usage via <code>curl</code>:
     <div class="row">
         <label for="message">Message:</label> <input type="text" id="message" size="40" placeholder="Press Return to send." autocomplete="off">
     </div>
-    <button type="submit"></button>
+    <button type="submit">Submit</button>
 </form>
 
 <br>
