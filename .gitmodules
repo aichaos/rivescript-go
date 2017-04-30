@@ -3,7 +3,7 @@
 	url = https://github.com/robertkrimen/otto
 [submodule "rsts"]
 	path = rsts
-	url = git@github.com:aichaos/rsts
+	url = https://github.com/aichaos/rsts
 [submodule "vendor/gopkg.in/yaml.v2"]
 	path = vendor/gopkg.in/yaml.v2
 	url = https://github.com/go-yaml/yaml
