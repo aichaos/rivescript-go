@@ -1,3 +1,9 @@
 [submodule "vendor/github.com/robertkrimen/otto"]
 	path = vendor/github.com/robertkrimen/otto
 	url = https://github.com/robertkrimen/otto
+[submodule "rsts"]
+	path = rsts
+	url = git@github.com:aichaos/rsts
+[submodule "vendor/gopkg.in/yaml.v2"]
+	path = vendor/gopkg.in/yaml.v2
+	url = https://github.com/go-yaml/yaml
