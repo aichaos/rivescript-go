@@ -4,7 +4,7 @@ import "regexp"
 
 // Commonly used regular expressions.
 var (
-	reWeight        = regexp.MustCompile(`\{weight=(\d+)\}`)
+	reWeight        = regexp.MustCompile(`\s*\{weight=(\d+)\}\s*`)
 	reInherits      = regexp.MustCompile(`\{inherits=(\d+)\}`)
 	reMeta          = regexp.MustCompile(`[\<>]+`)
 	reSymbols       = regexp.MustCompile(`[.?,!;:@#$%^&*()]+`)
@@ -12,6 +12,7 @@ var (
 	reZerowidthstar = regexp.MustCompile(`^\*$`)
 	reOptional      = regexp.MustCompile(`\[(.+?)\]`)
 	reArray         = regexp.MustCompile(`@(.+?)\b`)
+	reReplyArray    = regexp.MustCompile(`\(@([A-Za-z0-9_]+)\)`)
 	reBotvars       = regexp.MustCompile(`<bot (.+?)>`)
 	reUservars      = regexp.MustCompile(`<get (.+?)>`)
 	reInput         = regexp.MustCompile(`<input([1-9])>`)
