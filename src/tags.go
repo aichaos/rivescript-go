@@ -87,9 +87,10 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 
 	// _ wildcards can't match numbers! Quick note on why I did it this way:
 	// the initial replacement above (_ => (\w+?)) needs to be \w because the
-	// square brackets in [A-Za-z] will confuse the optionals logic just above.
-	// So then we switch it back down here.
-	pattern = strings.Replace(pattern, `\w`, "[A-Za-z]", -1)
+	// square brackets in [\s\d] will confuse the optionals logic just above.
+	// So then we switch it back down here. Also, we don't just use \w+ because
+	// that matches digits, and similarly [A-Za-z] doesn't work with Unicode.
+	pattern = strings.Replace(pattern, `\w`, `[^\s\d]`, -1)
 
 	// Filter in arrays.
 	giveup = 0
@@ -208,6 +209,32 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 		botstars = append(botstars, UNDEFINED)
 	}
 
+	// Turn arrays into randomized sets.
+	match := reReplyArray.FindStringSubmatch(reply)
+	var giveup uint
+	for len(match) > 0 {
+		giveup++
+		if giveup > rs.Depth {
+			rs.warn("Infinite loop interpolating arrays into reply!")
+			break
+		}
+
+		name := match[1]
+		var result string
+		if value, ok := rs.array[name]; ok {
+			result = "{random}" + strings.Join(value, "|") + "{/random}"
+		} else {
+			// Dummy it out so we can reinsert it, as-is, later.
+			result = "\x00@" + name + "\x00"
+		}
+
+		reply = strings.Replace(reply, "(@"+name+")", result, -1)
+		match = reReplyArray.FindStringSubmatch(reply)
+	}
+
+	// Re-insert dummied out (non-existant) arrays from the above block.
+	reply = regReplace(reply, "\x00@([A-Za-z0-9_]+)\x00", "(@$1)")
+
 	// Tag shortcuts.
 	reply = strings.Replace(reply, "<person>", "{person}<star>{/person}", -1)
 	reply = strings.Replace(reply, "<@>", "{@<star>}", -1)
@@ -245,8 +272,8 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 	reply = strings.Replace(reply, `\#`, "#", -1)
 
 	// {random}
-	match := reRandom.FindStringSubmatch(reply)
-	var giveup uint
+	match = reRandom.FindStringSubmatch(reply)
+	giveup = 0
 	for len(match) > 0 {
 		giveup++
 		if giveup > rs.Depth {
