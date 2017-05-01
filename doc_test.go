@@ -5,7 +5,6 @@ import (
 
 	"github.com/aichaos/rivescript-go"
 	"github.com/aichaos/rivescript-go/lang/javascript"
-	rss "github.com/aichaos/rivescript-go/src"
 )
 
 func Example() {
@@ -103,11 +102,10 @@ func ExampleRiveScript_javascript() {
 
 func ExampleRiveScript_subroutine() {
 	// Example for defining a Go function as an object macro.
-	// import rss "github.com/aichaos/rivescript-go/src"
 	bot := rivescript.New(nil)
 
 	// Define an object macro named `setname`
-	bot.SetSubroutine("setname", func(rs *rss.RiveScript, args []string) string {
+	bot.SetSubroutine("setname", func(rs *rivescript.RiveScript, args []string) string {
 		uid, _ := rs.CurrentUser()
 		rs.SetUservar(uid, args[0], args[1])
 		return ""

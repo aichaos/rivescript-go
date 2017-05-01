@@ -9,7 +9,17 @@ import (
 	"strings"
 )
 
-// SortReplies prepares the internal sort buffers to get ready for replying.
+/*
+SortReplies sorts the reply structures in memory for optimal matching.
+
+After you have finished loading your RiveScript code, call this method to
+populate the various sort buffers. This is absolutely necessary for reply
+matching to work efficiently!
+
+If the bot has loaded no topics, or if it ends up with no sorted triggers at
+the end, it will return an error saying such. This usually means the bot didn't
+load any RiveScript code, for example because it looked in the wrong directory.
+*/
 func (rs *RiveScript) SortReplies() error {
 	// (Re)initialize the sort cache.
 	rs.sorted.topics = map[string][]sortedTriggerEntry{}

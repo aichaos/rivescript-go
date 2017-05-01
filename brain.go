@@ -7,7 +7,14 @@ import (
 	"strings"
 )
 
-// Reply gets a reply from the bot.
+/*
+Reply fetches a reply from the bot for a user's message.
+
+Parameters
+
+	username: The name of the user requesting a reply.
+	message: The user's message.
+*/
 func (rs *RiveScript) Reply(username, message string) (string, error) {
 	rs.say("Asked to reply to [%s] %s", username, message)
 	var err error

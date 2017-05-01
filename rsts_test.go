@@ -1,5 +1,5 @@
 // RiveScript Test Suite: Go Test Runner
-package rivescript_test
+package rivescript
 
 import (
 	"fmt"
@@ -11,9 +11,6 @@ import (
 	"testing"
 
 	yaml "gopkg.in/yaml.v2"
-
-	rivescript "github.com/aichaos/rivescript-go"
-	rss "github.com/aichaos/rivescript-go/src"
 )
 
 // TestCase wraps each RiveScript test.
@@ -22,7 +19,7 @@ type TestCase struct {
 	file     string
 	name     string
 	username string
-	rs       *rivescript.RiveScript
+	rs       *RiveScript
 	steps    []TestStep
 }
 
@@ -58,7 +55,7 @@ func NewTestCase(t *testing.T, file, name string, opts TestSchema) *TestCase {
 		file:     file,
 		name:     name,
 		username: username,
-		rs: rivescript.New(&rivescript.Config{
+		rs: New(&Config{
 			Debug: opts.Debug,
 			UTF8:  opts.UTF8,
 		}),
@@ -169,7 +166,7 @@ func (t *TestCase) input(step TestStep) error {
 func (t *TestCase) expectedError(step TestStep, reply string, err error) error {
 	// Map of expected errors to their string counterpart from the test file.
 	goodErrors := map[string]error{
-		"ERR: No Reply Matched": rss.ErrNoTriggerMatched,
+		"ERR: No Reply Matched": ErrNoTriggerMatched,
 	}
 
 	if expect, ok := goodErrors[step.Reply.(string)]; ok {

@@ -23,8 +23,7 @@ fmt:
 
 # `make test` to run unit tests
 test: gopath
-	GOPATH=$(GOPATH) GO15VENDOREXPERIMENT=1 go test ./src
-	GOPATH=$(GOPATH) go test
+	GOPATH=$(GOPATH) GO15VENDOREXPERIMENT=1 go test
 
 # `make build` to build the binary
 build: gopath
