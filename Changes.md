@@ -44,6 +44,8 @@ documentation was then moved to the actual implementation functions).
   [RiveScript Test Suite](https://github.com/aichaos/rsts). The test file
   `rsts_test.go` implements the Go test runner, and the `rsts` repo was added
   as a Git submodule.
+* The Git commit hash is now encoded into the front-end command line client,
+  printed along with the version number in the welcome banner.
 
 ## v0.2.0 - Feb 7, 2017
 
