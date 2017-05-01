@@ -71,6 +71,7 @@ $(WIN32): gopath
 	GOPATH=$(GOPATH) GO15VENDOREXPERIMENT=1 GOOS=$(os) GOARCH=$(arch) \
 		go build $(LDFLAGS) -v -i -o bin/rivescript.exe cmd/rivescript/main.go
 	cp bin/rivescript.exe dist/rivescript-$(VERSION)-$(os)-$(arch)/
+	echo -e "@echo off\nrivescript eg/brain" > dist/rivescript-$(VERSION)-$(os)-$(arch)/example.bat
 	cd dist; zip -r ../rivescript-$(VERSION)-$(os)-$(arch).zip rivescript-$(VERSION)-$(os)-$(arch)
 
 # Sets up the gopath / build environment
