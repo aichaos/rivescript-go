@@ -2,7 +2,50 @@
 
 This documents the history of significant changes to `rivescript-go`.
 
-## v0.2.0 - Feb 7, 2016
+## v0.3.0 - Apr 30, 2017
+
+This update brings some long-needed restructuring to the source layout of
+`rivescript-go`. Briefly: it moves all source files from the `src/` subpackage
+into the root package namespace, and removes the wrapper shim functions (their
+documentation was then moved to the actual implementation functions).
+
+### API Breaking Changes
+
+* The `github.com/aichaos/rivescript-go/src` subpackage has been removed, and
+  all of the things you used to import from there can now be found in the root
+  package instead. Most notably, the `RiveScript` struct needed to be imported
+  (again) from the `src` subpackage for use with Go object macros.
+
+  To update source code where you used Go object macros:
+
+  ```diff
+    import (
+        "github.com/aichaos/rivescript-go"
+  -     rss "github.com/aichaos/rivescript-go/src"
+    )
+
+    func main() {
+        bot = rivescript.New(nil)
+
+  -     subroutine := func(rs *rss.RiveScript, args []string) string {
+  +     subroutine := func(rs *rivescript.RiveScript, args []string) string {
+            return "Hello world"
+        }
+
+        bot.SetSubroutine("hello", subroutine)
+    }
+  ```
+* `rivescript.Version` is now a string constant (replacing `VERSION`). The
+  instance method `Version()` has been removed.
+
+## Changes
+
+* All RiveScript unit tests have been removed in favor of those from the
+  [RiveScript Test Suite](https://github.com/aichaos/rsts). The test file
+  `rsts_test.go` implements the Go test runner, and the `rsts` repo was added
+  as a Git submodule.
+
+## v0.2.0 - Feb 7, 2017
 
 This update focuses on bug fixes and code reorganization.
 

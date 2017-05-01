@@ -9,7 +9,43 @@ import (
 	"strings"
 )
 
-// SortReplies prepares the internal sort buffers to get ready for replying.
+// Sort buffer data, for RiveScript.SortReplies()
+type sortBuffer struct {
+	topics map[string][]sortedTriggerEntry // Topic name -> array of triggers
+	thats  map[string][]sortedTriggerEntry
+	sub    []string // Substitutions
+	person []string // Person substitutions
+}
+
+// Holds a sorted trigger and the pointer to that trigger's data
+type sortedTriggerEntry struct {
+	trigger string
+	pointer *astTrigger
+}
+
+// Temporary categorization of triggers while sorting
+type sortTrack struct {
+	atomic map[int][]sortedTriggerEntry // Sort by number of whole words
+	option map[int][]sortedTriggerEntry // Sort optionals by number of words
+	alpha  map[int][]sortedTriggerEntry // Sort alpha wildcards by no. of words
+	number map[int][]sortedTriggerEntry // Sort numeric wildcards by no. of words
+	wild   map[int][]sortedTriggerEntry // Sort wildcards by no. of words
+	pound  []sortedTriggerEntry         // Triggers of just '#'
+	under  []sortedTriggerEntry         // Triggers of just '_'
+	star   []sortedTriggerEntry         // Triggers of just '*'
+}
+
+/*
+SortReplies sorts the reply structures in memory for optimal matching.
+
+After you have finished loading your RiveScript code, call this method to
+populate the various sort buffers. This is absolutely necessary for reply
+matching to work efficiently!
+
+If the bot has loaded no topics, or if it ends up with no sorted triggers at
+the end, it will return an error saying such. This usually means the bot didn't
+load any RiveScript code, for example because it looked in the wrong directory.
+*/
 func (rs *RiveScript) SortReplies() error {
 	// (Re)initialize the sort cache.
 	rs.sorted.topics = map[string][]sortedTriggerEntry{}

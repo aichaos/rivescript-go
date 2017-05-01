@@ -26,7 +26,10 @@ func (rs *RiveScript) warnSyntax(message string, filename string, lineno int, a 
 	rs.warn(message, a...)
 }
 
-// DumpTopics prints the topic structure to the terminal.
+/*
+DumpTopics is a debug method which pretty-prints the topic tree structure from
+the bot's memory.
+*/
 func (rs *RiveScript) DumpTopics() {
 	for topic, data := range rs.topics {
 		fmt.Printf("Topic: %s\n", topic)
@@ -48,7 +51,10 @@ func (rs *RiveScript) DumpTopics() {
 	}
 }
 
-// DumpSorted prints the sorted structure to the terminal.
+/*
+DumpSorted is a debug method which pretty-prints the sort tree of topics from
+the bot's memory.
+*/
 func (rs *RiveScript) DumpSorted() {
 	rs._dumpSorted(rs.sorted.topics, "Topics")
 	rs._dumpSorted(rs.sorted.thats, "Thats")

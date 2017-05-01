@@ -10,7 +10,13 @@ import (
 	"strings"
 )
 
-// LoadFile loads a single file into memory.
+/*
+LoadFile loads a single RiveScript source file from disk.
+
+Parameters
+
+	path: Path to a RiveScript source file.
+*/
 func (rs *RiveScript) LoadFile(path string) error {
 	rs.say("Load RiveScript file: %s", path)
 
@@ -31,7 +37,15 @@ func (rs *RiveScript) LoadFile(path string) error {
 	return rs.parse(path, lines)
 }
 
-// LoadDirectory loads a directory of files into memory.
+/*
+LoadDirectory loads multiple RiveScript documents from a folder on disk.
+
+Parameters
+
+	path: Path to the directory on disk
+	extensions...: List of file extensions to filter on, default is
+	               '.rive' and '.rs'
+*/
 func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 	if len(extensions) == 0 {
 		extensions = []string{".rive", ".rs"}
@@ -74,7 +88,14 @@ func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 	return nil
 }
 
-// Stream dynamically loads RiveScript source from a string.
+/*
+Stream loads RiveScript code from a text buffer.
+
+Parameters
+
+	code: Raw source code of a RiveScript document, with line breaks after
+	      each line.
+*/
 func (rs *RiveScript) Stream(code string) error {
 	lines := strings.Split(code, "\n")
 	return rs.parse("Stream()", lines)

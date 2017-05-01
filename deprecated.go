@@ -14,54 +14,54 @@ func deprecated(name, since string) {
 		"Use of 'rivescript.%s()' is deprecated since v%s (this is v%s)\n",
 		name,
 		since,
-		VERSION,
+		Version,
 	)
 }
 
 // SetDebug enables or disable debug mode.
-func (self *RiveScript) SetDebug(value bool) {
+func (rs *RiveScript) SetDebug(value bool) {
 	deprecated("SetDebug", "0.1.0")
-	self.rs.Debug = value
+	rs.Debug = value
 }
 
 // GetDebug tells you the current status of the debug mode.
-func (self *RiveScript) GetDebug() bool {
+func (rs *RiveScript) GetDebug() bool {
 	deprecated("GetDebug", "0.1.0")
-	return self.rs.Debug
+	return rs.Debug
 }
 
 // SetUTF8 enables or disabled UTF-8 mode.
-func (self *RiveScript) SetUTF8(value bool) {
+func (rs *RiveScript) SetUTF8(value bool) {
 	deprecated("SetUTF8", "0.1.0")
-	self.rs.UTF8 = value
+	rs.UTF8 = value
 }
 
 // GetUTF8 returns the current status of UTF-8 mode.
-func (self *RiveScript) GetUTF8() bool {
+func (rs *RiveScript) GetUTF8() bool {
 	deprecated("GetUTF8", "0.1.0")
-	return self.rs.UTF8
+	return rs.UTF8
 }
 
 // SetDepth lets you override the recursion depth limit (default 50).
-func (self *RiveScript) SetDepth(value uint) {
+func (rs *RiveScript) SetDepth(value uint) {
 	deprecated("SetDepth", "0.1.0")
-	self.rs.Depth = value
+	rs.Depth = value
 }
 
 // GetDepth returns the current recursion depth limit.
-func (self *RiveScript) GetDepth() uint {
+func (rs *RiveScript) GetDepth() uint {
 	deprecated("GetDepth", "0.1.0")
-	return self.rs.Depth
+	return rs.Depth
 }
 
 // SetStrict enables strict syntax checking when parsing RiveScript code.
-func (self *RiveScript) SetStrict(value bool) {
+func (rs *RiveScript) SetStrict(value bool) {
 	deprecated("SetStrict", "0.1.0")
-	self.rs.Strict = value
+	rs.Strict = value
 }
 
 // GetStrict returns the strict syntax check setting.
-func (self *RiveScript) GetStrict() bool {
+func (rs *RiveScript) GetStrict() bool {
 	deprecated("GetStrict", "0.1.0")
-	return self.rs.Strict
+	return rs.Strict
 }
