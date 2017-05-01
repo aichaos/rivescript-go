@@ -14,7 +14,7 @@ func deprecated(name, since string) {
 		"Use of 'rivescript.%s()' is deprecated since v%s (this is v%s)\n",
 		name,
 		since,
-		VERSION,
+		Version,
 	)
 }
 

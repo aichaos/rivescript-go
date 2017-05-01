@@ -24,13 +24,8 @@ import (
 	"github.com/aichaos/rivescript-go/sessions/memory"
 )
 
-// VERSION describes the module version.
-const VERSION string = "0.2.0"
-
-// Version returns the RiveScript library version.
-func (rs *RiveScript) Version() string {
-	return VERSION
-}
+// Version number for the RiveScript library.
+const Version = "0.3.0"
 
 // RiveScript is the bot instance.
 type RiveScript struct {

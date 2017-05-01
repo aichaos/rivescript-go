@@ -35,6 +35,8 @@ documentation was then moved to the actual implementation functions).
         bot.SetSubroutine("hello", subroutine)
     }
   ```
+* `rivescript.Version` is now a string constant (replacing `VERSION`). The
+  instance method `Version()` has been removed.
 
 ## Changes
 

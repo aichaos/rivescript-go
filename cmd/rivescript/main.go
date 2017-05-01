@@ -27,6 +27,9 @@ import (
 	"github.com/aichaos/rivescript-go/lang/javascript"
 )
 
+// Build is the git commit hash that the binary was built from.
+var Build = "-unknown-"
+
 var (
 	// Command line arguments.
 	version  bool
@@ -52,7 +55,7 @@ func main() {
 	args := flag.Args()
 
 	if version {
-		fmt.Printf("RiveScript-Go version %s\n", rivescript.VERSION)
+		fmt.Printf("RiveScript-Go version %s\n", rivescript.Version)
 		os.Exit(0)
 	}
 
@@ -86,7 +89,7 @@ func main() {
 	fmt.Printf(`
       .   .
      .:...::      RiveScript Interpreter (Go)
-    .::   ::.     Library Version: v%s
+    .::   ::.     Library Version: v%s (build %s)
  ..:;;. ' .;;:..
     .  '''  .     Type '/quit' to quit.
      :;,:,;:      Type '/help' for more options.
@@ -94,7 +97,7 @@ func main() {
 
 Using the RiveScript bot found in: %s
 Type a message to the bot and press Return to send it.
-`, bot.Version(), root)
+`, rivescript.Version, Build, root)
 
 	// Drop into the interactive command shell.
 	reader := bufio.NewReader(os.Stdin)

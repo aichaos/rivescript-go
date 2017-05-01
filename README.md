@@ -151,12 +151,20 @@ bot = rivescript.New(rivescript.WithUTF8())
 A common feature in many RiveScript implementations is the object macro, which
 enables you to write dynamic program code (in your favorite programming
 language) to add extra capabilities to your bot. For example, your bot could
-answer a question of `what is the weather like in _____` by running some
+answer a question of "what is the weather like in *$location*" by running some
 code to look up their answer via a web API.
 
 The Go version of RiveScript has support for object macros written in Go
 (at compile time of your application). It also has optional support for
 JavaScript object macros using the Otto library.
+
+Here is how to define a Go object macro:
+
+```go
+bot.SetSubroutine(func(rs *rivescript.RiveScript, args []string) string {
+    return "Hello world!"
+})
+```
 
 ## UTF-8 Support
 
@@ -202,60 +210,36 @@ relevant commands are:
   to your current system, so on Linux this will create a Linux binary.
   It's also recommended to run this one at least once, because it will cache
   dependency packages and speed up subsequent builds and runs.
-* `make build.win32` - cross compile for Windows, but see below.
-* `make run` - this simply runs the front-end command and points it to the
-  `eg/brain` folder as its RiveScript source.
-* `make dist` - creates a binary distribution (see [Distributiong](#distributing)
-  below).
-* `make dist.win32` - cross compiles a binary distribution for Windows,
-  equivalent to `build.win32`
-* `make fmt` - runs `gofmt` on all the source code.
-* `make test` - runs `go test`
+* `make run` - runs the front-end command and points it to the `eg/brain` folder
+  as its RiveScript source.
+* `make fmt` - runs `gofmt -w` on all the source files.
+* `make test` - runs the unit tests.
 * `make clean` - cleans up the `.gopath`, `bin` and `dist` directories.
 
-### Cross-compile for Windows
+### Releasing
 
-If you're using Go v1.5 or higher, and aren't running Windows, you can build
-the `rivescript.exe` file using the cross compilation feature.
+You can build a release for an individual platform by running a command like
+`make linux/amd64`. The valid build targets are currently as follows:
 
-If you're using Go as provided by your distribution's package maintainers, you
-need to mess with some path permissions for the Win32 build to work. This is
-because Go has to build the entire standard library for the foreign system
-(for more information, see [this blog post](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5)
-on the topic).
+* Linux: `linux/386` and `linux/amd64`
+* Windows: `windows/386` and `windows/amd64`
+* MacOS: `darwin/amd64`
 
-Run `mkdir /usr/lib/golang/pkg/windows_386` and `chown` it as your user account.
+Run `make release` to automatically build releases for all supported platforms.
 
-Then run `make build.win32` to cross compile the Win32 binary and output it to
-`bin/rivescript.exe`
+A directory for the release is created in `dist/rivescript-$VERSION-$OS-$ARCH/`
+that contains the built binary, README.md, Changes.md and examples. You can
+inspect this directory afterwards; its contents are automatically tarred up
+(zip for Windows) and placed in the root of the git repo.
 
-You should sanity test that the binary actually runs from a Windows environment.
-It might not run properly via Wine.
+If you are cross-compiling for a different system, you may need to mess with
+permissions so that Go can download the standard library for the new target.
+Example:
 
-## Distributing
-
-The GNU Makefile can build distributable binary forms of the RiveScript command
-for the host OS (usually Linux) and cross-compile for Windows. Building for Mac
-OS X, and building from within a Windows dev environment have not yet been
-tested.
-
-* `make dist` - build a distributable for your current system (usually Linux,
-  but Mac would probably work too).
-* `make dist.win32` - build a distributable for Windows using cross compilation.
-
-The `dist` commands will create a directory named `dist/rivescript` which you
-can inspect afterwards, and creates a zip file (Windows) or a `tar.gz` (Linux
-and Mac) with the contents of that folder, with names like
-`rivescript-0.0.2-win32.zip` and `rivescript-0.0.2-Linux.tar.gz` in the current
-directory (the root of the Git repo).
-
-The distributable directory contains only the following types of files:
-
-* The executable binary (`rivescript.exe` for Windows or `rivescript` otherwise)
-* Metadata files: `README.md`, `LICENSE`, etc.
-* Example brain at `eg/brain`
-* (Windows only) a super simple batch file for launching `rivescript.exe` and
-  pointing it to the example brain: `example.bat`
+```bash
+% sudo mkdir /usr/lib/golang/pkg/windows_386
+% chown your_user:your_user /usr/lib/golang/pkg/windows_386
+```
 
 ## See Also
 
@@ -265,7 +249,8 @@ The distributable directory contains only the following types of files:
   object macro handlers for foreign programming languages.
 * [rivescript-go/sessions](./sessions) - Contains the interface for user
   variable session managers as well as the default in-memory manager and the
-  `NullStore` for testing.
+  `NullStore` for testing. Other official session managers (e.g. Redis) are in
+  here as well.
 
 ## License
 
