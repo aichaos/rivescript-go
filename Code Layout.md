@@ -7,109 +7,28 @@ Here is a walkthrough of the code layout in a more logical fashion.
 
 ## RiveScript Module
 
-### Constructor and Version Methods
+| File Name        | Purpose and Methods                                                  |
+|------------------|----------------------------------------------------------------------|
+| `astmap.go`      | Private aliases for `rivescript/ast` structs.                        |
+| `brain.go`       | `Reply()` and its implementation.                                    |
+| `config.go`      | Config struct and public config methods (e.g. `SetUservar()`).       |
+| `debug.go`       | Debugging functions.                                                 |
+| `deprecated.go`  | Deprecated methods are moved to this file.                           |
+| `doc.go`         | Main module documentation for Go Doc.                                |
+| `errors.go`      | Error types used by the RiveScript module.                           |
+| `inheritance.go` | Functions related to topic inheritance.                              |
+| `loading.go`     | File loading functions (`LoadFile()`, `LoadDirectory()`, `Stream()`) |
+| `parser.go`      | Internal implementation of `rivescript/parser`                       |
+| `regexp.go`      | Definitions for commonly used regular expressions.                   |
+| `rivescript.go`  | `RiveScript` definition, constructor, and `Version()` methods.       |
+| `sorting.go`     | `SortReplies()` and its implementation.                              |
+| `tags.go`        | Tag processing functions.                                            |
+| `utils.go`       | Misc utility functions.                                              |
 
-* `rivescript.go`
-  * Defines class `RiveScript` and `Version()` method.
-  * Internally, also the debug methods like `say()` and `warn()`
+## Test Files
 
-### Loading and Parsing Methods
-
-* `loading.go`
-  * Public methods:
-    * `LoadFile()`
-    * `LoadDirectory()`
-    * `Stream()`
-    * `SortReplies()`
-  * Internal methods:
-    * `parse()`
-* `parser.go`
-  * The bulk of the RiveScript source parsing logic is here.
-  * Private methods:
-    * `parseSource()`
-* `ast.go`
-  * Defines private structures for representing the "abstract syntax tree"
-
-### Reply Sorting
-
-* `sorting.go`
-  * Private methods:
-    * `sortTriggerSet()`
-    * `sortList()`
-    * `sortByWords()`
-    * `sortByLength()`
-    * `initSortTrack()`
-
-### Public Configuration Methods
-
-* `config.go`
-  * Public methods:
-    * `SetHandler()` / `RemoveHandler()`
-    * `SetSubroutine()` / `RemoveSubroutine()`
-    * `SetGlobal()`
-    * `SetVariable()` / `GetVariable()`
-    * `SetSubstitution()`
-    * `SetPerson()`
-    * `SetUservar()` / `SetUservars()`
-    * `GetUserver()` / `GetUservars()` / `GetAllUservars()`
-    * `ClearUservars()` / `ClearAllUservars()`
-    * `FreezeUservars()` / `ThawUservars()`
-    * `LastMatch()`
-    * `CurrentUser()`
-
-### Reply Fetching Methods
-
-* `brain.go`
-  * Public methods:
-    * `Reply()`
-  * Private methods:
-    * `getReply()`
-* `tags.go`
-  * Code for processing tags on both user messages and responses.
-  * Private methods:
-    * `formatMessage()`
-    * `triggerRegexp()`
-    * `processTags()`
-    * `substitute()`
-
-### Macro Handler Interface
-
-* `macros.go`
-  - Defines `MacroInterface`
-
-### Debug Methods
-
-* `debug.go`
-  * Public methods:
-    * `DumpTopics()`
-    * `DumpSorted()`
-  * Private methods:
-    * `_dumpSorted()`
-    * `_dumpSortedList()`
-
-### Documentation
-
-* `doc.go` - Package documentation.
-* `doc_test.go` - Examples.
-
-### Inheritance Utility Functions
-
-* `inheritance.go`
-  * Private methods:
-    * `getTopicTriggers()`
-    * `_getTopicTriggers()`
-    * `getTopicTree()`
-
-### Miscellaneous
-
-* `regexp.go` - Central location for common regular expressions.
-* `structs.go` - Central location of miscellaneous structs.
-* `utils.go` - Miscellaneous utility functions.
-
-## Object Macro Language Handlers
-
-* `lang/javascript` - JavaScript support via Otto.
-
-## Stand-alone RiveScript Interpreter
-
-* `cmd/rivescript`
+| File Name       | Purpose                                    |
+|-----------------|--------------------------------------------|
+| `doc_test.go`   | Example snippets.                          |
+| `macro_test.go` | Tests external object macros (JavaScript). |
+| `rsts_test.go`  | The RiveScript Test Suite.                 |

@@ -27,6 +27,11 @@ import (
 // VERSION describes the module version.
 const VERSION string = "0.2.0"
 
+// Version returns the RiveScript library version.
+func (rs *RiveScript) Version() string {
+	return VERSION
+}
+
 // RiveScript is the bot instance.
 type RiveScript struct {
 	// Parameters
@@ -74,11 +79,37 @@ replies and its own memory of user data. You could make multiple bots in the
 same program, each with its own replies loaded from different sources.
 */
 func New(cfg *Config) *RiveScript {
+	// If no config was given, default to the BasicConfig.
+	if cfg == nil {
+		cfg = &Config{
+			Strict: true,
+			Depth:  50,
+		}
+	}
+
+	// Sensible default config options.
+	if cfg.Depth == 0 {
+		cfg.Depth = 50
+	}
+	if cfg.SessionManager == nil {
+		cfg.SessionManager = memory.New()
+	}
+
+	// Random number seed.
+	var random rand.Source
+	if cfg.Seed != 0 {
+		random = rand.NewSource(cfg.Seed)
+	} else {
+		random = rand.NewSource(time.Now().UnixNano())
+	}
+
 	rs := &RiveScript{
 		// Set the default config objects that don't have good zero-values.
-		Strict:   true,
-		Depth:    50,
-		sessions: memory.New(),
+		Debug:    cfg.Debug,
+		Strict:   cfg.Strict,
+		Depth:    cfg.Depth,
+		UTF8:     cfg.UTF8,
+		sessions: cfg.SessionManager,
 
 		// Default punctuation that gets removed from messages in UTF-8 mode.
 		UnicodePunctuation: regexp.MustCompile(`[.,!?;:]`),
@@ -97,66 +128,32 @@ func New(cfg *Config) *RiveScript {
 		topics:      map[string]*astTopic{},
 		sorted:      new(sortBuffer),
 
-		random: rand.NewSource(time.Now().UnixNano()),
+		random: random,
+		rng:    rand.New(random),
 	}
 
-	// Helpers.
+	// Helper modules.
 	rs.parser = parser.New(parser.ParserConfig{
-		Strict:  true,
+		Strict:  cfg.Strict,
+		UTF8:    cfg.UTF8,
 		OnDebug: rs.say,
 		OnWarn:  rs.warnSyntax,
 	})
-
-	// If no config was given, default to the BasicConfig.
-	if cfg == nil {
-		cfg = &Config{
-			Strict: true,
-			Depth:  50,
-		}
-	}
-
-	// If no session manager configured, default to the in-memory one.
-	if cfg.SessionManager == nil {
-		cfg.SessionManager = memory.New()
-	}
-
-	rs.Configure(cfg.Debug, cfg.Strict, cfg.UTF8, cfg.Depth, cfg.Seed, cfg.SessionManager)
 
 	return rs
 }
 
-// Configure is a convenience function for the public API to set all of its
-// settings at once.
-func (rs *RiveScript) Configure(debug, strict, utf8 bool, depth uint,
-	seed int64, sessions sessions.SessionManager) {
-	rs.Debug = debug
-	rs.Strict = strict
-	rs.UTF8 = utf8
-	rs.Depth = depth
-	rs.sessions = sessions
+// Forms of undefined.
+const (
+	// UNDEFINED is the text "undefined", the default text for variable getters.
+	UNDEFINED = "undefined"
 
-	// Sensible defaults.
-	if depth == 0 {
-		rs.Depth = 50
-	}
-	if seed != 0 {
-		rs.random = rand.NewSource(seed)
-	}
-	rs.rng = rand.New(rs.random)
+	// UNDEFTAG is the "<undef>" tag for unsetting variables in !Definitions.
+	UNDEFTAG = "<undef>"
+)
 
-	// Reconfigure the parser.
-	rs.parser = parser.New(parser.ParserConfig{
-		Strict:  strict,
-		UTF8:    utf8,
-		OnDebug: rs.say,
-		OnWarn:  rs.warnSyntax,
-	})
-}
-
-// Version returns the RiveScript library version.
-func (rs *RiveScript) Version() string {
-	return VERSION
-}
+// Subroutine is a function prototype for defining custom object macros in Go.
+type Subroutine func(*RiveScript, []string) string
 
 // SetUnicodePunctuation allows you to override the text of the unicode
 // punctuation regexp. Provide a string literal that will validate in
