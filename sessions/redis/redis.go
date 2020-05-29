@@ -1,4 +1,4 @@
-// Package redis implements a Redis backed session manager for RiveScript.
+a// Package redis implements a Redis backed session manager for RiveScript.
 package redis
 
 // NOTE: This source file contains the implementation of a SessionManager.

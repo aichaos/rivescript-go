@@ -54,7 +54,7 @@ func (s *MemoryStore) Init(username string) *sessions.UserData {
 }
 
 // Set a user variable.
-func (s *MemoryStore) Set(username string, vars map[string]string) error {
+func (s *MemoryStore) Set(username string, vars map[string]string) {
 	s.Init(username)
 	s.lock.Lock()
 	defer s.lock.Unlock()
@@ -62,7 +62,10 @@ func (s *MemoryStore) Set(username string, vars map[string]string) error {
 		s.users[username].Variables[k] = v
 	}
 	err := s.store.Put(username, s.users[username])
-	return err
+	if err != nil {
+		fmt.Printf("ERROR: %v\n", err)
+	}
+	return
 }
 
 // AddHistory adds history items.
@@ -129,7 +132,7 @@ func (s *MemoryStore) GetAny(username string) (*sessions.UserData, error) {
 	return cloneUser(s.users[username]), nil
 }
 
-// GetAll gets all data for all users in memory.
+// GetAll gets all data for all users. in memory
 func (s *MemoryStore) GetAll() map[string]*sessions.UserData {
 	s.lock.Lock()
 	defer s.lock.Unlock()
@@ -167,7 +170,7 @@ func (s *MemoryStore) GetHistory(username string) (*sessions.History, error) {
 }
 
 // Clear data for a user.
-func (s *MemoryStore) Clear(username string) error {
+func (s *MemoryStore) Clear(username string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -175,25 +178,24 @@ func (s *MemoryStore) Clear(username string) error {
 	// delete from db
 	err := s.store.Delete(username)
 	if err != nil {
-		return err
+		return
 	}
-	return nil
+	return
 }
 
 // ClearAll resets all user data for all users.
-func (s *MemoryStore) ClearAll() (errstr string, err error) {
+func (s *MemoryStore) ClearAll() {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	for key, user := range s.users {
-		err = s.store.Delete(key)
+		err := s.store.Delete(key)
 		if err != nil {
 			// Do this for all users. User gets one error back and a string with all the errors.
-			errstr = fmt.Sprintf("%v %v %v\n", errstr, user, err)
+			fmt.Printf("%v %v %v\n", user, err)
 		}
 	}
 	s.users = make(map[string]*sessions.UserData)
 	s.frozen = make(map[string]*sessions.UserData)
-	return errstr, err
 }
 
 // Freeze makes a snapshot of user variables.
