@@ -70,14 +70,48 @@ func (rs *RiveScript) parse(path string, lines []string) error {
 		// Consume the AST triggers into the brain.
 		for _, trig := range data.Triggers {
 			// Convert this AST trigger into an internal astmap trigger.
-			trigger := new(astTrigger)
-			trigger.trigger = trig.Trigger
-			trigger.reply = trig.Reply
-			trigger.condition = trig.Condition
-			trigger.redirect = trig.Redirect
-			trigger.previous = trig.Previous
+			foundtrigger := false
+			for _, previous := range rs.topics[topic].triggers {
+				if previous.trigger == trig.Trigger && previous.previous == trig.Previous {
+					previous.redirect = trig.Redirect
+					foundtrigger = true
+					for _, cond := range trig.Condition {	
+						foundcond := false
+						for _, oldcond := range previous.condition {
+							if oldcond == cond {
+								foundcond = true
+								break
+							}
+						}
+						if foundcond == false {
+							previous.condition = append(previous.condition, cond)
+						}
+					}
+					for _, reply := range trig.Reply {
+						newreply := true
+						for _, oldreply := range previous.reply {
+							if oldreply == reply {
+								newreply = false
+								break
+							}
+						}
+						if newreply == true {
+							previous.reply = append(previous.reply, reply)
+						}
+					}
+					rs.say("Found previous trigger: %s == %s", trig.Trigger, previous.trigger)
+				}
+			}
+			if foundtrigger == false {
+				trigger := new(astTrigger)
+				trigger.trigger = trig.Trigger
+				trigger.reply = trig.Reply
+				trigger.condition = trig.Condition
+				trigger.redirect = trig.Redirect
+				trigger.previous = trig.Previous
 
-			rs.topics[topic].triggers = append(rs.topics[topic].triggers, trigger)
+				rs.topics[topic].triggers = append(rs.topics[topic].triggers, trigger)
+			}
 		}
 	}
 
