@@ -75,7 +75,7 @@ func (rs *RiveScript) parse(path string, lines []string) error {
 				if previous.trigger == trig.Trigger && previous.previous == trig.Previous {
 					previous.redirect = trig.Redirect
 					foundtrigger = true
-					for _, cond := range trig.Condition {	
+					for _, cond := range trig.Condition {
 						foundcond := false
 						for _, oldcond := range previous.condition {
 							if oldcond == cond {
