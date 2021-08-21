@@ -2,6 +2,11 @@
 
 This documents the history of significant changes to `rivescript-go`.
 
+## v0.3.1 - Aug 20, 2021
+
+This release simply adds a `go.mod` to this project so that it gets along well
+with modern Go projects.
+
 ## v0.3.0 - Apr 30, 2017
 
 This update brings some long-needed restructuring to the source layout of
