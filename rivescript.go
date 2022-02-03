@@ -13,7 +13,9 @@ package rivescript
 */
 
 import (
+	"fmt"
 	"math/rand"
+	"os"
 	"regexp"
 	"sync"
 	"time"
@@ -22,6 +24,7 @@ import (
 	"github.com/aichaos/rivescript-go/parser"
 	"github.com/aichaos/rivescript-go/sessions"
 	"github.com/aichaos/rivescript-go/sessions/memory"
+	"github.com/rmasci/rivescript-go/sessions/skv"
 )
 
 // Version number for the RiveScript library.
@@ -87,7 +90,16 @@ func New(cfg *Config) *RiveScript {
 		cfg.Depth = 50
 	}
 	if cfg.SessionManager == nil {
-		cfg.SessionManager = memory.New()
+		if cfg.Persist == true && cfg.DBfile != "" {
+			var err error
+			cfg.SessionManager, err = skv.New(cfg.DBfile)
+			if err != nil {
+				fmt.Printf("Error Opening Database Try turning persist off.\n", err)
+				os.Exit(1)
+			}
+		} else {
+			cfg.SessionManager = memory.New()
+		}
 	}
 
 	// Random number seed.

@@ -47,6 +47,10 @@ type Config struct {
 	// SessionManager is an implementation of the same name for managing user
 	// variables for the bot. The default is the in-memory session handler.
 	SessionManager sessions.SessionManager
+
+	Persist bool
+
+	DBfile string
 }
 
 // WithUTF8 provides a Config object that enables UTF-8 mode.
