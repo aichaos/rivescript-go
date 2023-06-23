@@ -6,6 +6,7 @@ package redis
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aichaos/rivescript-go/sessions"
 	redis "gopkg.in/redis.v5"
@@ -25,13 +26,17 @@ type Config struct {
 
 	// Settings for the Redis client.
 	Redis *redis.Options
+
+	// Session timeout using time.duration
+	SessionTimeout time.Duration
 }
 
 // Session wraps a Redis client connection.
 type Session struct {
-	prefix       string
-	frozenPrefix string
-	client       *redis.Client
+	prefix         string
+	frozenPrefix   string
+	client         *redis.Client
+	sessionTimeout time.Duration
 }
 
 // New creates a new Redis session instance.
@@ -58,9 +63,10 @@ func New(options *Config) *Session {
 	}
 
 	return &Session{
-		prefix:       options.Prefix,
-		frozenPrefix: options.FrozenPrefix,
-		client:       redis.NewClient(options.Redis),
+		prefix:         options.Prefix,
+		frozenPrefix:   options.FrozenPrefix,
+		client:         redis.NewClient(options.Redis),
+		sessionTimeout: options.SessionTimeout,
 	}
 }
 

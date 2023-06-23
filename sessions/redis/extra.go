@@ -79,7 +79,7 @@ func (s *Session) putRedisFrozen(username string, data *sessions.UserData, froze
 		return err
 	}
 
-	err = s.client.Set(key, string(encoded), 0).Err()
+	err = s.client.Set(key, string(encoded), s.sessionTimeout).Err()
 	if err != nil {
 		return err
 	}
