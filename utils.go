@@ -46,7 +46,7 @@ func isAtomic(pattern string) bool {
 	// will do.
 	specials := []string{"*", "#", "_", "(", "[", "<", "@"}
 	for _, special := range specials {
-		if strings.Index(pattern, special) > -1 {
+		if strings.Contains(pattern, special) {
 			return false
 		}
 	}
@@ -114,7 +114,7 @@ func regSplit(text string, delimiter string) []string {
 		result[i] = text[lastStart:element[0]]
 		lastStart = element[1]
 	}
-	result[len(indexes)] = text[lastStart:len(text)]
+	result[len(indexes)] = text[lastStart:]
 	return result
 }
 

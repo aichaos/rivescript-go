@@ -22,7 +22,7 @@ func (rs *RiveScript) LoadFile(path string) error {
 
 	fh, err := os.Open(path)
 	if err != nil {
-		return fmt.Errorf("Failed to open file %s: %s", path, err)
+		return fmt.Errorf("failed to open file %s: %s", path, err)
 	}
 
 	defer fh.Close()
@@ -53,12 +53,12 @@ func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 
 	files, err := filepath.Glob(fmt.Sprintf("%s/*", path))
 	if err != nil {
-		return fmt.Errorf("Failed to open folder %s: %s", path, err)
+		return fmt.Errorf("failed to open folder %s: %s", path, err)
 	}
 
 	// No files matched?
 	if len(files) == 0 {
-		return fmt.Errorf("No RiveScript source files were found in %s", path)
+		return fmt.Errorf("no RiveScript source files were found in %s", path)
 	}
 
 	var anyValid bool
@@ -82,7 +82,7 @@ func (rs *RiveScript) LoadDirectory(path string, extensions ...string) error {
 	}
 
 	if !anyValid {
-		return fmt.Errorf("No RiveScript source files were found in %s", path)
+		return fmt.Errorf("no RiveScript source files were found in %s", path)
 	}
 
 	return nil

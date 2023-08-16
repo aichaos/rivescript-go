@@ -23,20 +23,6 @@ An example of how unwieldy the code would be if I use the direct AST types:
 If the ast package structs are updated, update the mappings in this package too.
 */
 
-type astRoot struct {
-	begin   astBegin
-	topics  map[string]*astTopic
-	objects []*astObject
-}
-
-type astBegin struct {
-	global map[string]string
-	vars   map[string]string
-	sub    map[string]string
-	person map[string]string
-	array  map[string][]string // Map of string (names) to arrays-of-strings
-}
-
 type astTopic struct {
 	triggers []*astTrigger
 }
@@ -47,10 +33,4 @@ type astTrigger struct {
 	condition []string
 	redirect  string
 	previous  string
-}
-
-type astObject struct {
-	name     string
-	language string
-	code     []string
 }

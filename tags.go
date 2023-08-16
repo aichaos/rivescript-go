@@ -97,7 +97,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 
 	// Filter in arrays.
 	giveup = 0
-	for strings.Index(pattern, "@") > -1 {
+	for strings.Contains(pattern, "@") {
 		giveup++
 		if giveup > rs.Depth {
 			break
@@ -116,7 +116,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 
 	// Filter in bot variables.
 	giveup = 0
-	for strings.Index(pattern, "<bot ") > -1 {
+	for strings.Contains(pattern, "<bot ") {
 		giveup++
 		if giveup > rs.Depth {
 			break
@@ -135,7 +135,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 
 	// Filter in user variables.
 	giveup = 0
-	for strings.Index(pattern, "<get ") > -1 {
+	for strings.Contains(pattern, "<get ") {
 		giveup++
 		if giveup > rs.Depth {
 			break
@@ -158,7 +158,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 	giveup = 0
 	pattern = strings.Replace(pattern, "<input>", "<input1>", -1)
 	pattern = strings.Replace(pattern, "<reply>", "<reply1>", -1)
-	for strings.Index(pattern, "<input") > -1 || strings.Index(pattern, "<reply") > -1 {
+	for strings.Contains(pattern, "<input") || strings.Contains(pattern, "<reply") {
 		giveup++
 		if giveup > 50 {
 			break
@@ -179,7 +179,7 @@ func (rs *RiveScript) triggerRegexp(username string, pattern string) string {
 	}
 
 	// Recover escaped Unicode symbols.
-	if rs.UTF8 && strings.Index(pattern, `\u`) > -1 {
+	if rs.UTF8 && strings.Contains(pattern, `\u`) {
 		// TODO: make this more general
 		pattern = strings.Replace(pattern, `\u0040`, "@", -1)
 	}
@@ -286,7 +286,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 
 		var random []string
 		text := match[1]
-		if strings.Index(text, "|") > -1 {
+		if strings.Contains(text, "|") {
 			random = strings.Split(text, "|")
 		} else {
 			random = strings.Split(text, " ")
@@ -358,7 +358,7 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 				target = rs.global
 			}
 
-			if strings.Index(data, "=") > -1 {
+			if strings.Contains(data, "=") {
 				// Assigning the value.
 				parts := strings.Split(data, "=")
 				rs.say("Assign %s variable %s = %s", tag, parts[0], parts[1])
@@ -559,7 +559,7 @@ func (rs *RiveScript) substitute(message string, subs map[string]string, sorted 
 
 	// Convert the placeholders back in.
 	var tries uint
-	for strings.Index(message, "\x00") > -1 {
+	for strings.Contains(message, "\x00") {
 		tries++
 		if tries > rs.Depth {
 			rs.warn("Too many loops in substitution placeholders!")

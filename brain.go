@@ -39,7 +39,7 @@ func (rs *RiveScript) Reply(username, message string) (string, error) {
 		}
 
 		// OK to continue?
-		if strings.Index(begin, "{ok}") > -1 {
+		if strings.Contains(begin, "{ok}") {
 			reply, err = rs.getReply(username, message, false, 0)
 			if err != nil {
 				return "", err
@@ -360,7 +360,6 @@ func (rs *RiveScript) getReply(username string, message string, isBegin bool, st
 			if len(bucket) > 0 {
 				reply = bucket[rs.randomInt(len(bucket))]
 			}
-			break
 		}
 	}
 

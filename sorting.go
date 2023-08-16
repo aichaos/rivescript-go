@@ -93,9 +93,9 @@ sortTriggerSet sorts a group of triggers in an optimal sorting order.
 
 This function has two use cases:
 
-1. Create a sort buffer for "normal" (matchable) triggers, which are triggers
-   that are NOT accompanied by a %Previous tag.
-2. Create a sort buffer for triggers that had %Previous tags.
+ 1. Create a sort buffer for "normal" (matchable) triggers, which are triggers
+    that are NOT accompanied by a %Previous tag.
+ 2. Create a sort buffer for triggers that had %Previous tags.
 
 Use the `excludePrevious` parameter to control which one is being done. This
 function will return a list of sortedTriggerEntry items, and it's intended to
@@ -179,7 +179,7 @@ func (rs *RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevi
 			}
 
 			// Start inspecting the trigger's contents.
-			if strings.Index(pattern, "_") > -1 {
+			if strings.Contains(pattern, "_") {
 				// Alphabetic wildcard included.
 				cnt := wordCount(pattern, false)
 				rs.say("Has a _ wildcard with %d words", cnt)
@@ -191,7 +191,7 @@ func (rs *RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevi
 				} else {
 					track[inherits].under = append(track[inherits].under, trig)
 				}
-			} else if strings.Index(pattern, "#") > -1 {
+			} else if strings.Contains(pattern, "#") {
 				// Numeric wildcard included.
 				cnt := wordCount(pattern, false)
 				rs.say("Has a # wildcard with %d words", cnt)
@@ -203,7 +203,7 @@ func (rs *RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevi
 				} else {
 					track[inherits].pound = append(track[inherits].pound, trig)
 				}
-			} else if strings.Index(pattern, "*") > -1 {
+			} else if strings.Contains(pattern, "*") {
 				// Wildcard included.
 				cnt := wordCount(pattern, false)
 				rs.say("Has a * wildcard with %d words", cnt)
@@ -215,7 +215,7 @@ func (rs *RiveScript) sortTriggerSet(triggers []sortedTriggerEntry, excludePrevi
 				} else {
 					track[inherits].star = append(track[inherits].star, trig)
 				}
-			} else if strings.Index(pattern, "[") > -1 {
+			} else if strings.Contains(pattern, "[") {
 				// Optionals included.
 				cnt := wordCount(pattern, false)
 				rs.say("Has optionals with %d words", cnt)
@@ -293,9 +293,7 @@ func sortList(dict map[string]string) []string {
 		// Sort the strings of this word-count by their lengths.
 		sortedLengths := track[cnt]
 		sort.Sort(sort.Reverse(byLength(sortedLengths)))
-		for _, item := range sortedLengths {
-			output = append(output, item)
-		}
+		output = append(output, sortedLengths...)
 	}
 
 	return output

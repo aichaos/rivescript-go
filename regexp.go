@@ -15,8 +15,6 @@ var (
 	reReplyArray    = regexp.MustCompile(`\(@([A-Za-z0-9_]+)\)`)
 	reBotvars       = regexp.MustCompile(`<bot (.+?)>`)
 	reUservars      = regexp.MustCompile(`<get (.+?)>`)
-	reInput         = regexp.MustCompile(`<input([1-9])>`)
-	reReply         = regexp.MustCompile(`<reply([1-9])>`)
 	reRandom        = regexp.MustCompile(`\{random\}(.+?)\{/random\}`)
 
 	// Self-contained tags like <set> that contain no nested tag.

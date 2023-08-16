@@ -83,7 +83,7 @@ func (rs *RiveScript) parse(path string, lines []string) error {
 								break
 							}
 						}
-						if foundcond == false {
+						if !foundcond {
 							previous.condition = append(previous.condition, cond)
 						}
 					}
@@ -95,14 +95,14 @@ func (rs *RiveScript) parse(path string, lines []string) error {
 								break
 							}
 						}
-						if newreply == true {
+						if newreply {
 							previous.reply = append(previous.reply, reply)
 						}
 					}
 					rs.say("Found previous trigger: %s == %s", trig.Trigger, previous.trigger)
 				}
 			}
-			if foundtrigger == false {
+			if !foundtrigger {
 				trigger := new(astTrigger)
 				trigger.trigger = trig.Trigger
 				trigger.reply = trig.Reply
