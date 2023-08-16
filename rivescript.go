@@ -25,7 +25,7 @@ import (
 )
 
 // Version number for the RiveScript library.
-const Version = "0.3.1"
+const Version = "0.4.0"
 
 // RiveScript is the bot instance.
 type RiveScript struct {
@@ -34,6 +34,7 @@ type RiveScript struct {
 	Strict             bool // Strictly enforce RiveScript syntax
 	Depth              uint // Max depth for recursion
 	UTF8               bool // Support UTF-8 RiveScript code
+	CaseSensitive      bool // Preserve casing on incoming user messages
 	Quiet              bool // Suppress all warnings from being emitted
 	UnicodePunctuation *regexp.Regexp
 
@@ -100,11 +101,12 @@ func New(cfg *Config) *RiveScript {
 
 	rs := &RiveScript{
 		// Set the default config objects that don't have good zero-values.
-		Debug:    cfg.Debug,
-		Strict:   cfg.Strict,
-		Depth:    cfg.Depth,
-		UTF8:     cfg.UTF8,
-		sessions: cfg.SessionManager,
+		Debug:         cfg.Debug,
+		Strict:        cfg.Strict,
+		Depth:         cfg.Depth,
+		UTF8:          cfg.UTF8,
+		CaseSensitive: cfg.CaseSensitive,
+		sessions:      cfg.SessionManager,
 
 		// Default punctuation that gets removed from messages in UTF-8 mode.
 		UnicodePunctuation: regexp.MustCompile(`[.,!?;:]`),

@@ -181,6 +181,24 @@ func (self *Parser) Parse(filename string, code []string) (*ast.Root, error) {
 
 		line = strings.TrimSpace(line)
 
+		// Allow the "?Keyword" command to work around UTF-8 bugs for users who
+		// wanted to use `+ [*] keyword [*]` with Unicode symbols that don't match
+		// properly with the usual "optional wildcard" syntax.
+		if cmd == "?" {
+			// The ?Keyword command is really an alias to a +Trigger with some workarounds
+			// to make it match the keyword _anywhere_, in every variation so it works with
+			// Unicode strings.
+			variants := []string{
+				line,
+				fmt.Sprintf(`[*]%s[*]`, line),
+				fmt.Sprintf(`*%s*`, line),
+				fmt.Sprintf(`[*]%s*`, line),
+				fmt.Sprintf(`*%s[*]`, line),
+			}
+			cmd = "+"
+			line = "(" + strings.Join(variants, "|") + ")"
+		}
+
 		// TODO: check syntax
 
 		// Reset the %Previous state if this is a new +Trigger.

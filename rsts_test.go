@@ -222,7 +222,7 @@ func (t *TestCase) fail(err error) {
 }
 
 func TestRiveScript(t *testing.T) {
-	tests, err := filepath.Glob("../rsts/tests/*.yml")
+	tests, err := filepath.Glob("./rsts/tests/*.yml")
 	if err != nil {
 		panic(err)
 	}

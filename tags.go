@@ -9,12 +9,15 @@ import (
 	"strings"
 
 	"github.com/aichaos/rivescript-go/sessions"
+	"github.com/mattn/go-shellwords"
 )
 
 // formatMessage formats a user's message for safe processing.
 func (rs *RiveScript) formatMessage(msg string, botReply bool) string {
 	// Lowercase it.
-	msg = strings.ToLower(msg)
+	if !rs.CaseSensitive {
+		msg = strings.ToLower(msg)
+	}
 
 	// Run substitutions and sanitize what's left.
 	msg = rs.substitute(msg, rs.sub, rs.sorted.sub)
@@ -494,7 +497,11 @@ func (rs *RiveScript) processTags(username string, message string, reply string,
 		}
 
 		text := strings.TrimSpace(match[1])
-		parts := strings.Split(text, " ")
+		parts, err := shellwords.Parse(text)
+		if err != nil {
+			rs.warn("<call> shellwords: %s", err)
+			parts = strings.Split(text, " ")
+		}
 		obj := parts[0]
 		args := []string{}
 		if len(parts) > 1 {

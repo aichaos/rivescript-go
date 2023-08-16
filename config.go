@@ -44,6 +44,11 @@ type Config struct {
 	// RiveScript to choose its own seed, `time.Now().UnixNano()`
 	Seed int64
 
+	// Preserve the capitalization on a user's message instead of lowercasing it.
+	// By default RiveScript will lowercase all messages coming in - set this and
+	// the original casing will be preserved through wildcards and star tags.
+	CaseSensitive bool
+
 	// SessionManager is an implementation of the same name for managing user
 	// variables for the bot. The default is the in-memory session handler.
 	SessionManager sessions.SessionManager
