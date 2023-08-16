@@ -156,7 +156,7 @@ code to look up their answer via a web API.
 
 The Go version of RiveScript has support for object macros written in Go
 (at compile time of your application). It also has optional support for
-JavaScript object macros using the Otto library.
+JavaScript object macros using the [goja](https://github.com/dop251/goja) library.
 
 Here is how to define a Go object macro:
 
@@ -164,6 +164,76 @@ Here is how to define a Go object macro:
 bot.SetSubroutine(func(rs *rivescript.RiveScript, args []string) string {
     return "Hello world!"
 })
+```
+
+### JavaScript Object Macros
+
+Here is an example how to make JavaScript object macros available via
+the [goja](https://github.com/dop251/goja) module:
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/aichaos/rivescript-go"
+    "github.com/aichaos/rivescript-go/lang/javascript"
+)
+
+func main() {
+    // Initialize RiveScript first.
+    bot := rivescript.New(rivescript.WithUTF8())
+
+    // Add the JavaScript object macro handler.
+    js := javascript.New(bot)
+    bot.SetHandler("javascript", js)
+
+    // You can access the goja VM and set your own global
+    // variable or function bindings to be called from your
+    // object macros.
+    js.VM.Set("helloFunc", func(name string) string {
+        return fmt.Sprintf("Hello, %s!", name)
+    })
+
+    // Load some RiveScript code. This example just tests the
+    // JavaScript object macro support.
+    err := bot.Stream(`
+        > object add javascript
+          let a = args[0];
+          let b = args[1];
+          return parseInt(a) + parseInt(b);
+        < object
+
+        > object fn javascript
+          let result = helloFunc(args[0])
+          return result
+        < object
+
+        + add # and #
+        - <star1> + <star2> = <call>add <star1> <star2></call>
+
+        + say hello *
+        - <call>fn <star></call>
+    `)
+    if err != nil {
+      fmt.Printf("Error loading RiveScript document: %s", err)
+    }
+
+    // Sort the replies after loading them!
+    bot.SortReplies()
+
+    // Get some replies!
+    inputs := []string{"add 5 and 12", "say hello goja"}
+    for _, message := range inputs {
+      fmt.Printf("You said: %s\n", message)
+        reply, err := bot.Reply("local-user", message)
+        if err != nil {
+          fmt.Printf("Error: %s\n", err)
+        } else {
+          fmt.Printf("The bot says: %s\n", reply)
+        }
+    }
+}
 ```
 
 ## UTF-8 Support
@@ -215,6 +285,20 @@ relevant commands are:
 * `make fmt` - runs `gofmt -w` on all the source files.
 * `make test` - runs the unit tests.
 * `make clean` - cleans up the `.gopath`, `bin` and `dist` directories.
+
+### Testing
+
+The rivescript-go repo submodules the RiveScript Test Suite (rsts) project.
+If you didn't do a `git clone --recursive` for rivescript-go you can pull the
+submodule via the following commands:
+
+```bash
+git submodule init
+git submodule update
+```
+
+Then `make test` (or `go test`) should show results from the tests run
+out of the rsts/ folder.
 
 ### Releasing
 

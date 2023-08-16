@@ -52,11 +52,11 @@ import (
 	"strings"
 
 	"github.com/aichaos/rivescript-go"
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
 )
 
 type JavaScriptHandler struct {
-	vm        *otto.Otto
+	VM        *goja.Runtime
 	bot       *rivescript.RiveScript
 	functions map[string]string
 }
@@ -64,7 +64,7 @@ type JavaScriptHandler struct {
 // New creates an object handler for JavaScript with its own Otto VM.
 func New(rs *rivescript.RiveScript) *JavaScriptHandler {
 	js := new(JavaScriptHandler)
-	js.vm = otto.New()
+	js.VM = goja.New()
 	js.bot = rs
 	js.functions = map[string]string{}
 
@@ -81,32 +81,31 @@ func (js JavaScriptHandler) Load(name string, code []string) {
 	`, name, strings.Join(code, "\n"))
 
 	// Run this code to load the function into the VM.
-	js.vm.Run(js.functions[name])
+	js.VM.RunString(js.functions[name])
 }
 
 // Call executes a JavaScript macro and returns its results.
 func (js JavaScriptHandler) Call(name string, fields []string) string {
 	// Make the RiveScript object available to the JS.
-	v, err := js.vm.ToValue(js.bot)
-	if err != nil {
-		fmt.Printf("Error binding RiveScript object to Otto: %s", err)
-	}
+	v := js.VM.ToValue(js.bot)
 
 	// Convert the fields into a JavaScript object.
-	jsFields, err := js.vm.ToValue(fields)
-	if err != nil {
-		fmt.Printf("Error binding fields to Otto: %s", err)
-	}
+	jsFields := js.VM.ToValue(fields)
 
 	// Run the JS function call and get the result.
-	result, err := js.vm.Call(fmt.Sprintf("object_%s", name), nil, v, jsFields)
+	function, ok := goja.AssertFunction(js.VM.Get(fmt.Sprintf("object_%s", name)))
+	if !ok {
+		return fmt.Sprintf("[goja: error asserting function object_%s]", name)
+	}
+
+	result, err := function(goja.Undefined(), v, jsFields)
 	if err != nil {
 		fmt.Printf("Error: %s", err)
 	}
 
 	reply := ""
-	if result.IsDefined() {
-		reply, _ = result.ToString()
+	if !goja.IsUndefined(result) {
+		reply = result.String()
 	}
 
 	// Return it.

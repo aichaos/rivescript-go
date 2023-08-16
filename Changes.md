@@ -2,6 +2,85 @@
 
 This documents the history of significant changes to `rivescript-go`.
 
+## v0.4.0 - Aug 15, 2023
+
+This update will modernize the Go port of RiveScript bringing some of the
+newer features that were available on the JavaScript or Python ports.
+
+### The ?Keyword Command
+
+This update adds support for the newer `?Keyword` command in RiveScript.
+
+This command works around a Unicode matching bug that affected the
+Go, JavaScript and Python ports of RiveScript. For example:
+
+```rivescript
+// You wanted this trigger to match if "你好" appears anywhere
+// in a user's message, but it wasn't working before.
++ [*] 你好 [*]
+- 你好!
+
+// Now: use the ?Keyword command in place of +Trigger
+? 你好
+- 你好!
+```
+
+The optional wildcard `[*]` syntax didn't work when paired with Unicode
+symbols because the regular expression that `[*]` is turned into (which
+involves "word boundary" or `\b` characters) only worked with ASCII latin
+characters. The ?Keyword command works around this by translating into a
++Trigger that tries _every_ combination of literal word, wildcard on either
+or both sides, and optional wildcard, to ensure that your keyword trigger
+will indeed match your keyword _anywhere_ in the user's message.
+
+### CaseSensitive User Message Support
+
+By default RiveScript would always lowercase the user's message as it
+comes in. If this is undesirable and you'd like to preserve their _actual_
+capitalization (when it gets captured by wildcards and comes out in their
+`<star>` tags), provide the new CaseSensitive boolean to your RiveScript
+constructor:
+
+```go
+bot := rivescript.New(&rivescript.Config{
+    CaseSensitive: true,
+})
+```
+
+The built-in `rivescript` command line program adds a `-case` parameter
+to enable this option for testing:
+
+```bash
+rivescript -case /path/to/brain
+```
+
+### JavaScript Object Macros
+
+The official JavaScript object macro support library has a couple of
+exciting new updates.
+
+Firstly, the JavaScript engine has been replaced from
+[github.com/robertkrimen/otto](https://github.com/robertkrimen/otto) with
+[github.com/dop251/goja](https://github.com/dop251/goja) which should
+provide a better quality of life for writing JavaScript functions for
+your bot. Goja supports many of the modern ES6+ features including the
+let and const keyword and arrow functions.
+
+Additionally, the Goja runtime will be exposed at the `.VM` accessor
+for the JavaScriptHandler class, so you can directly play with it and
+set global variables or Go functions that can be called from your
+JavaScript macros in your bot, allowing for much greater extensibility.
+
+### Other Changes
+
+* Add shellword parsing for `<call>` tags: you can pass "quoted strings"
+  in which will go in as one 'word' in the `args` array, instead of the
+  arguments being literally split by space characters. This brings the
+  Go port of RiveScript in line with the JavaScript port which has been
+  doing this for a while.
+* Fix the rsts_test.go to properly load from the RSTS (RiveScript Test
+  Suite) git submodule.
+
 ## v0.3.1 - Aug 20, 2021
 
 This release simply adds a `go.mod` to this project so that it gets along well

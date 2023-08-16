@@ -32,12 +32,13 @@ var Build = "-unknown-"
 
 var (
 	// Command line arguments.
-	version  bool
-	debug    bool
-	utf8     bool
-	depth    uint
-	nostrict bool
-	nocolor  bool
+	version       bool
+	debug         bool
+	utf8          bool
+	depth         uint
+	caseSensitive bool
+	nostrict      bool
+	nocolor       bool
 )
 
 func init() {
@@ -45,6 +46,7 @@ func init() {
 	flag.BoolVar(&debug, "debug", false, "Enable debug mode.")
 	flag.BoolVar(&utf8, "utf8", false, "Enable UTF-8 mode.")
 	flag.UintVar(&depth, "depth", 50, "Recursion depth limit")
+	flag.BoolVar(&caseSensitive, "case", false, "Enable the CaseSensitive flag, preserving capitalization in user messages")
 	flag.BoolVar(&nostrict, "nostrict", false, "Disable strict syntax checking")
 	flag.BoolVar(&nocolor, "nocolor", false, "Disable ANSI colors")
 }
@@ -68,10 +70,11 @@ func main() {
 
 	// Initialize the bot.
 	bot := rivescript.New(&rivescript.Config{
-		Debug:  debug,
-		Strict: !nostrict,
-		Depth:  depth,
-		UTF8:   utf8,
+		Debug:         debug,
+		Strict:        !nostrict,
+		Depth:         depth,
+		UTF8:          utf8,
+		CaseSensitive: caseSensitive,
 	})
 
 	// JavaScript object macro handler.
